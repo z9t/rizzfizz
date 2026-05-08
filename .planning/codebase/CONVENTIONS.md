@@ -5,93 +5,121 @@
 ## Naming Patterns
 
 **Files:**
-- Use lower-case feature/module names for implementation files: `src/color.ts`, `src/scrub.ts`, `src/technology.ts`, `src/pidge.ts`.
-- Use `.d.ts` only for ambient/module declarations: `src/culori.d.ts`, `src/node-shims.d.ts`.
-- Use JavaScript test files named by feature: `test/color.test.js`, `test/cli.test.js`.
+- Use lowercase module names for source files under `src/`, such as `src/color.ts`, `src/scrub.ts`, `src/technology.ts`, and `src/pidge.ts`.
+- Use `.d.ts` declaration shims only for interoperability gaps, as in `src/culori.d.ts` and `src/node-shims.d.ts`.
+- Use JavaScript test files under `test/` because tests import compiled output from `dist/`, as in `test/color.test.js` and `test/cli.test.js`.
+- Use descriptive fixture names under `test/fixtures/`, such as `test/fixtures/DESIGN-source.md` and `test/fixtures/waffle-scan.json`.
 
 **Functions:**
-- Use camelCase named exports for public functions: `buildPaletteRun`, `parseHexToOklch`, `cssVarsForPalette` in `src/color.ts`.
-- Use local helper functions as non-exported camelCase functions below the public API: `expectRecord`, `expectArray`, `expectString` in `src/schemas.ts`; `parseTechnology`, `parseEvidence` in `src/technology.ts`.
-- Use command action helpers for CLI parsing and validation, not inline anonymous logic when reused: `parsePositiveInt` in `src/cli.ts`.
+- Use `camelCase` for exported functions and private helpers: `buildPaletteRun`, `parseHexToOklch`, `scrubDesignMarkdown`, `buildTechnologyContext`, `sendPidgeHandoff`.
+- Prefix transformation builders with `build*` when returning structured artifacts: `buildRawReference` in `src/scrub.ts`, `buildTechnologyContext` in `src/technology.ts`.
+- Prefix validators/parsers with `parse*`, `expect*`, or `normalize*`: `parsePositiveInt` in `src/cli.ts:171`, `expectRecord` in `src/schemas.ts:87`, `normalizeHueFamily` in `src/color.ts`.
+- Keep private helpers unexported unless tests or other modules need them. Examples: `relativeLuminance` in `src/color.ts`, `recommendFromDetected` in `src/technology.ts`.
 
 **Variables:**
-- Use camelCase for local variables and options objects: `sourcePath`, `outDir`, `paletteRun`, `technologyContext` in `src/scrub.ts`.
-- Use SCREAMING_SNAKE_CASE for module constants and regular expressions: `HUE_FAMILIES`, `RELATIONSHIPS` in `src/color.ts`; `HEX_RE` in `src/schemas.ts`; `DEFAULT_WHIFFLER` in `src/technology.ts`.
-- Use snake_case only for serialized schema fields that become JSON artifacts: `created_at`, `hue_family`, `accent_strong`, `palette_relationship` in `src/types.ts`.
+- Use `const` by default. Use `let` only for intentional mutation, such as `text` in `scrubSourceText` at `src/scrub.ts:112` and `stackFit` in `src/technology.ts:132`.
+- Use explicit domain nouns for structured values: `paletteRun`, `rawReference`, `technologyContext`, `selectedVariants`, `sourcePath`, `outDir`.
+- Use snake_case only for emitted schema fields that are part of JSON artifacts, such as `created_at`, `hue_family`, `palette_relationship`, and `raw_reference_included` in `src/types.ts` and `src/pidge.ts`.
 
 **Types:**
-- Use exported PascalCase type aliases for domain shapes: `PaletteTokens`, `PaletteRun`, `RawReference` in `src/types.ts`; `WaffleScan`, `TechnologyContext` in `src/technology.ts`.
-- Prefer literal schema discriminators in types and runtime parsers: `schema: "rizzfizz.palette-run.v1"` in `src/types.ts` and `src/schemas.ts`.
-- Use `unknown` at external input boundaries, then validate before casting: `paletteRunSchema.parse(value: unknown)` in `src/schemas.ts`; `waffleScanSchema.parse(value: unknown)` in `src/technology.ts`.
+- Use exported `type` aliases for public data contracts in `src/types.ts`: `PaletteTokens`, `ContrastCheck`, `PaletteRelationship`, `PaletteVariant`, `PaletteRun`, `RawReference`.
+- Keep module-local option/result types beside the implementation when they are not shared globally, such as `ScrubOptions` in `src/scrub.ts:8` and `PidgeHandoffOptions` in `src/pidge.ts`.
+- Use literal schema/version string types for emitted artifacts, such as `schema: "rizzfizz.palette-run.v1"` in `src/types.ts`.
+- Prefer `Record<string, unknown>` for flexible JSON-like internal sections where the output shape is intentionally broad, as in `buildDesignDna` in `src/scrub.ts:129`.
 
 ## Code Style
 
 **Formatting:**
-- No Prettier or Biome config is detected.
-- Use two-space indentation in JSON and TypeScript, matching `package.json`, `tsconfig.json`, and `src/*.ts`.
-- Keep semicolons enabled and use double quotes for strings/imports, matching `src/cli.ts`, `src/color.ts`, and `test/*.js`.
-- Use trailing commas sparingly; current object and array literals generally omit trailing commas.
-- Keep files ASCII unless an existing source file requires otherwise.
+- No formatter config is present. Preserve the existing style: two-space indentation, semicolons, double quotes, trailing commas omitted.
+- Keep object literals and arrays readable with one property per line for artifact schemas and CLI option objects, as in `src/cli.ts:29` and `src/pidge.ts`.
+- Use early throws for invalid input rather than nested conditionals, as in `parsePositiveInt` at `src/cli.ts:171` and `expectHex` at `src/schemas.ts:112`.
+- Avoid comments for obvious code. Current source uses almost no inline comments; prefer clear function names and structured helper functions.
 
 **Linting:**
-- No ESLint config is detected.
-- The quality gate is TypeScript strict checking via `npm run check`, which runs `tsc -p tsconfig.json --noEmit` from `package.json`.
-- Preserve `strict: true`, `module: "NodeNext"`, `moduleResolution: "NodeNext"`, and `declaration: true` in `tsconfig.json` unless the package output model changes.
+- No ESLint, Prettier, or Biome configuration is detected.
+- Enforce quality through TypeScript strict mode in `tsconfig.json:6`, build checks in `package.json:14`, and tests in `package.json:16`.
+- Use `npm run check` before committing TypeScript changes. It runs `tsc -p tsconfig.json --noEmit` after the Node 22 precheck.
 
 ## Import Organization
 
 **Order:**
-1. External packages first: `commander` in `src/cli.ts`, `culori` via `src/culori-require.ts` in `src/color.ts`.
-2. Node built-ins next using the `node:` prefix: `node:path`, `node:fs/promises`, `node:child_process`.
-3. Local runtime imports next with explicit `.js` extensions for NodeNext ESM: `./color.js`, `./io.js`, `./schemas.js`.
-4. Type-only imports last or grouped separately with `import type`: `import type { PaletteRun } from "./types.js"`.
+1. External packages first, such as `commander` in `src/cli.ts:1` and `culori` via `src/culori-require.ts`.
+2. Node built-ins with the `node:` prefix, such as `node:path`, `node:fs/promises`, and `node:child_process`.
+3. Local value imports using explicit `.js` extensions, such as `./pidge.js`, `./color.js`, and `./io.js`.
+4. Local type imports with `import type`, either separated or grouped with `type` specifiers, as in `src/scrub.ts:5` and `src/types.ts`.
 
 **Path Aliases:**
-- Not detected. Use relative imports with explicit `.js` suffixes in TypeScript source because `tsconfig.json` uses NodeNext modules.
+- Not detected. `tsconfig.json` has no `paths` aliases. Use relative imports inside `src/`.
+- Because `module` and `moduleResolution` are `NodeNext` in `tsconfig.json:4`, TypeScript source imports local modules with runtime `.js` extensions.
 
 ## Error Handling
 
 **Patterns:**
-- Throw `Error` with actionable messages for invalid CLI arguments, invalid colors, invalid schema payloads, and missing variants: `src/cli.ts`, `src/color.ts`, `src/schemas.ts`, `src/pidge.ts`.
-- Keep boundary validation close to parsing: schema helpers in `src/schemas.ts` and `src/technology.ts` check shape, primitive type, enum membership, and hex format before returning typed data.
-- CLI entrypoint catches `unknown`, prints a normalized `rizzfizz: ...` message, and sets `process.exitCode = 1` instead of throwing through Node internals in `src/cli.ts`.
-- Filesystem and external executable checks use `access()` before execution where the missing path is a user-facing failure mode: `src/pidge.ts`, `src/technology.ts`.
+- Throw `Error` with concrete user-facing messages for invalid CLI arguments and malformed data, as in `src/cli.ts:53`, `src/cli.ts:139`, and `src/schemas.ts:27`.
+- For CLI entrypoint errors, catch `unknown`, normalize to a message, write to stderr, and set `process.exitCode = 1` in `src/cli.ts:165`.
+- For schema parsing, use small `expect*` helpers that validate one primitive at a time and include a path-like label in failures, as in `src/schemas.ts:87` and `src/technology.ts:162`.
+- For optional filesystem checks, catch access failures and return booleans through an `exists` helper, as in `src/pidge.ts` and `src/exports.ts`.
+- For external command execution, use `execFile` with argument arrays rather than shell interpolation, as in `src/technology.ts:82` and `src/pidge.ts`.
 
 ## Logging
 
 **Framework:** console
 
 **Patterns:**
-- CLI success paths print concise artifact paths and counts with `console.log` in `src/cli.ts`.
-- CLI failure path prints only the normalized error message with `console.error` in `src/cli.ts`.
-- Library modules under `src/` should not log directly; return values or throw errors and let `src/cli.ts` handle user output.
+- CLI commands print concise completion lines to stdout after writing artifacts, such as `Wrote palette run` in `src/cli.ts:122` and `Wrote technology context` in `src/cli.ts:65`.
+- CLI errors use stderr through `console.error` in `src/cli.ts:167`.
+- Library modules do not log. Return values and thrown errors carry status back to `src/cli.ts`.
+- Tests assert stdout for CLI behavior where output is part of the integration contract, such as `test/cli.test.js:104`.
 
 ## Comments
 
 **When to Comment:**
-- Comments are minimal in current source. Prefer descriptive names and structured return data over comments.
-- Add comments only for non-obvious boundary decisions, especially source-safety, schema compatibility, or external tool behavior.
+- Comment only when a local rule is not obvious from names or types. Current code relies on descriptive identifiers rather than comments.
+- Do not add narration comments around straightforward artifact assembly or helper calls.
 
 **JSDoc/TSDoc:**
-- Not used. Do not introduce broad docblock style unless the public API surface grows enough to need generated API docs.
+- Not used. Public contracts are communicated through TypeScript exported types in `src/types.ts`, `src/pidge.ts`, and `src/technology.ts`.
 
 ## Function Design
 
-**Size:** Keep pure transformation helpers small and composable where possible: `normalizeHueFamily`, `normalizeRelationship`, `contrastRatio`, and `paletteUsage` in `src/color.ts`.
+**Size:** 
+- Keep exported functions focused on one workflow step: `buildPaletteRun` creates palette runs in `src/color.ts`; `scrubDesignMarkdown` coordinates the scrub pipeline in `src/scrub.ts`; `sendPidgeHandoff` coordinates handoff packaging in `src/pidge.ts`.
+- For larger transformations, split parsing, selection, formatting, and writing into private helpers. Examples: `maybeBuildTechnologyContext`, `buildRawReference`, `scrubSourceText`, and `buildDesignDna` in `src/scrub.ts`.
 
-**Parameters:** Use typed options objects for workflows with several inputs: `buildPaletteRun(options)`, `scrubDesignMarkdown(options)`, `runWhiffler(options)`, and `sendPidgeHandoff(options)`.
+**Parameters:** 
+- Use a single options object for exported async workflow functions with multiple inputs: `scrubDesignMarkdown(options: ScrubOptions)` in `src/scrub.ts:20`, `runWhiffler(options)` in `src/technology.ts:70`, and `sendPidgeHandoff(options)` in `src/pidge.ts`.
+- Use positional parameters only for simple pure helpers, such as `contrastRatio(foreground, background)` and `interpolateOklch(a, b, t, easing)` in `src/color.ts`.
 
-**Return Values:** Return concrete domain objects from library functions and reserve process output for `src/cli.ts`. Async workflow functions should return typed promises such as `Promise<WaffleScan>` or `Promise<PidgeHandoffResult>`.
+**Return Values:** 
+- Return explicit domain types or `Promise<void>` for writers. Examples: `PaletteRun` from `buildPaletteRun`, `TechnologyContext` from `buildTechnologyContext`, `Promise<void>` from `exportCssVars`.
+- Include generated paths in workflow result objects when callers need them, as in `scrubDesignMarkdown` returning `{ outDir, paletteRun }` and `sendPidgeHandoff` returning `payloadPath`, `attachments`, `command`, `stdout`, and `dryRun`.
 
 ## Module Design
 
-**Exports:**
-- Export domain functions from focused modules: palette logic in `src/color.ts`, artifact exporters in `src/exports.ts`, scrub workflow in `src/scrub.ts`, external scan logic in `src/technology.ts`, Pidge handoff logic in `src/pidge.ts`.
-- Keep parser/helper primitives private unless another module needs them; examples are `expectString` in `src/schemas.ts` and `parseTechnology` in `src/technology.ts`.
+**Exports:** 
+- Keep CLI wiring in `src/cli.ts`; do not put domain logic there beyond option validation and command dispatch.
+- Put filesystem primitives in `src/io.ts`; use `readText`, `writeText`, `writeJson`, and `readJson` rather than duplicating JSON/file handling.
+- Put schema validation in `src/schemas.ts` and module-specific validators in the module that owns the external shape, such as `waffleScanSchema` in `src/technology.ts`.
+- Keep data contracts in `src/types.ts` when shared by multiple modules.
 
-**Barrel Files:**
-- `src/exports.ts` is not a package barrel; it owns export artifact generation.
-- No general `index.ts` barrel is present. Import directly from the owning module.
+**Barrel Files:** 
+- `src/exports.ts` is an implementation module for export formats, not a barrel file.
+- No generic barrel export file is detected. Prefer direct module imports.
+
+## Quality Commands
+
+```bash
+npm run check        # TypeScript strict typecheck, no emit
+npm run build        # Compile src/ to dist/ and declarations
+npm test             # Build, then run node --test over test/*.test.js
+npm run smoke        # Build and exercise palette + export CLI paths
+```
+
+## Coverage Gaps To Consider When Editing
+
+- Add negative-path tests when changing validators in `src/schemas.ts`, `src/technology.ts`, or `src/cli.ts`; current tests mostly cover successful flows.
+- Add direct tests for `scrubSourceText` and identity extraction behavior when changing scrub logic in `src/scrub.ts`; current coverage exercises the behavior only through `scrub-md` CLI integration.
+- Add tests for external command failures and missing executable paths when changing `src/technology.ts` or `src/pidge.ts`; current CLI tests use fixtures and a local Pidge path.
 
 ---
 

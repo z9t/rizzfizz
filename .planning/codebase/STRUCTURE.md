@@ -12,7 +12,7 @@ rizzfizz/
 ├── test/                        # Node test suites and fixtures
 │   └── fixtures/                # Design Markdown and Whiffler JSON fixtures
 ├── scripts/                     # Development/runtime guard scripts
-├── GitHubPalleteRepos/          # Reference/research notes and source material
+├── GitHubPalleteRepos/          # Reference and research material
 ├── .planning/codebase/          # GSD codebase maps
 ├── package.json                 # Package metadata, scripts, dependencies, bin
 ├── package-lock.json            # npm lockfile
@@ -82,7 +82,7 @@ rizzfizz/
 
 **Utilities:**
 - `src/io.ts`: Shared text/JSON read and write helpers.
-- `src/culori-require.ts`: Culori interop shim.
+- `src/culori-require.ts`: Culori CommonJS interop shim.
 - `src/culori.d.ts`, `src/node-shims.d.ts`: Type declaration support.
 
 **Testing:**

@@ -7,8 +7,8 @@
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│                       CLI Entry Layer                        │
-│        `bin/cli.js` -> `dist/cli.js` -> `src/cli.ts`          │
+│                        CLI Entry Layer                       │
+│            `bin/cli.js` -> `dist/cli.js` -> `src/cli.ts`      │
 ├───────────────┬──────────────┬──────────────┬───────────────┤
 │  `scrub-md`   │ `palette`    │ `export`     │ `tech-scan` / │
 │               │ `css-vars`   │              │ `handoff`     │
@@ -37,11 +37,11 @@
 
 | Component | Responsibility | File |
 |-----------|----------------|------|
-| CLI router | Defines commands, parses options, calls focused library functions, reports output paths. | `src/cli.ts` |
-| Executable shim | Loads compiled CLI from package `bin` entry. | `bin/cli.js` |
-| Palette engine | Normalizes relationship/hue inputs, generates OKLCH-derived palettes, validates contrast, emits CSS vars. | `src/color.ts` |
+| CLI router | Defines commands, parses options, calls focused library functions, and reports output paths. | `src/cli.ts` |
+| Executable shim | Loads compiled CLI from the package `bin` entry. | `bin/cli.js` |
+| Palette engine | Normalizes relationship/hue inputs, generates OKLCH palettes, validates contrast, and emits CSS vars. | `src/color.ts` |
 | Scrub pipeline | Reads Design Markdown, preserves private raw reference, removes source identity, builds design DNA, variants, tokens, briefs, and optional tech context. | `src/scrub.ts` |
-| Export pipeline | Converts palette runs or scrub run directories into A-Eyes tokens, CSS vars, and builder briefs. | `src/exports.ts` |
+| Export pipeline | Converts palette runs or scrub-run directories into A-Eyes tokens, CSS vars, and builder briefs. | `src/exports.ts` |
 | Technology context | Reads or runs Waffle Whiffler scans and summarizes detections into builder-safe recommendations. | `src/technology.ts` |
 | Pidge handoff | Packages scrub-run artifacts for agent handoff and sends or dry-runs `pidge send`. | `src/pidge.ts` |
 | Runtime schemas | Validates palette runs/tokens and Whiffler input shapes at IO boundaries. | `src/schemas.ts`, `src/technology.ts` |
@@ -50,13 +50,14 @@
 
 ## Pattern Overview
 
-**Overall:** CLI-first functional pipeline with small modules and JSON/Markdown/CSS artifacts as boundaries.
+**Overall:** CLI-first functional pipeline with JSON/Markdown/CSS artifacts as durable boundaries.
 
 **Key Characteristics:**
-- Keep command definitions in `src/cli.ts`; put behavior in importable modules.
+- Keep command declarations and option defaults in `src/cli.ts`; place behavior in importable modules.
 - Treat `src/types.ts` and `src/schemas.ts` as the stable contracts for generated artifacts.
-- Use explicit file artifacts as the state boundary between commands.
-- Keep source-safe builder outputs separate from private raw source archives.
+- Use caller-provided output directories as the state boundary between commands.
+- Keep private raw source archives separate from builder-facing outputs and handoffs.
+- Execute external tools with `execFile` argument arrays, not shell command strings.
 
 ## Layers
 
@@ -71,8 +72,8 @@
 - Purpose: Generate palette and design-intelligence artifacts without owning CLI parsing.
 - Location: `src/color.ts`, `src/scrub.ts`, `src/exports.ts`
 - Contains: Palette generation, source scrubbing, design DNA construction, builder-brief rendering, export format conversion.
-- Depends on: `src/types.ts`, `src/schemas.ts`, `src/io.ts`, `src/technology.ts`.
-- Used by: `src/cli.ts`, tests under `test/`.
+- Depends on: `src/types.ts`, `src/schemas.ts`, `src/io.ts`, optional `src/technology.ts`.
+- Used by: `src/cli.ts`, `test/cli.test.js`, `test/color.test.js`.
 
 **Integration Layer:**
 - Purpose: Normalize external tool output and route generated artifacts to other agents.
@@ -90,9 +91,9 @@
 
 ## Data Flow
 
-### `scrub-md` Run Path
+### Primary Request Path: `scrub-md`
 
-1. CLI receives Design Markdown path and output directory (`src/cli.ts:17`).
+1. CLI receives Design Markdown path, output directory, palette options, and optional technology scan flags (`src/cli.ts:17`).
 2. `scrubDesignMarkdown` resolves paths, reads source text, builds `RawReference`, scrubs identity terms, infers relationship/hue, and generates a `PaletteRun` (`src/scrub.ts:20`).
 3. Optional technology context is loaded from Whiffler JSON or produced by running Whiffler (`src/scrub.ts:74`, `src/technology.ts:70`).
 4. The pipeline writes private and builder-facing artifacts: `raw-reference.json`, `scrubbed-design-dna.json`, `DESIGN-neutral.md`, `DESIGN-variant-*.md`, `design-md-variation-run.json`, `palette-run.json`, `tokens.css`, `variants-palette.json`, optional `technology-context.json`, and `builder-briefs/*.md` (`src/scrub.ts:58`).
@@ -100,38 +101,38 @@
 ### Palette Generation Path
 
 1. CLI validates optional seed and normalizes `--relationship` / `--hue` (`src/cli.ts:106`).
-2. `buildPaletteRun` clamps variant count, offsets hue families, and builds variants (`src/color.ts:139`).
-3. Each variant selects relationship tokens, validates required contrast pairs, and throws on required failures (`src/color.ts:173`).
-4. `writeJson` persists the palette run or `cssVarsForPalette` emits CSS variables (`src/io.ts:13`, `src/color.ts:281`).
+2. `buildPaletteRun` clamps variant count to 1-12, offsets hue families, and builds variants (`src/color.ts:139`).
+3. Each variant selects relationship tokens, validates contrast pairs, and throws on required failures (`src/color.ts:173`, `src/color.ts:255`).
+4. `writeJson` persists the palette run or `cssVarsForPalette` emits CSS variables (`src/io.ts:13`, `src/color.ts:290`).
 
 ### Export Path
 
-1. CLI routes `--format` to one of `exportAEyesTokens`, `exportAgentBriefs`, or `exportCssVars` (`src/cli.ts:125`).
-2. Export functions parse `palette-run.json` through `paletteRunSchema` before writing derived artifacts (`src/exports.ts:26`).
+1. CLI routes `--format` to `exportAEyesTokens`, `exportAgentBriefs`, or `exportCssVars` (`src/cli.ts:125`).
+2. Export functions parse `palette-run.json` through `paletteRunSchema` before writing derived artifacts (`src/exports.ts:26`, `src/schemas.ts:24`).
 3. Agent briefs combine palette variants, design DNA, and optional technology context into Markdown (`src/exports.ts:36`, `src/exports.ts:59`).
 
 ### Technology Scan Path
 
-1. `tech-scan` accepts either an existing Whiffler JSON file or a URL (`src/cli.ts:44`).
+1. `tech-scan` requires either `--input` Whiffler JSON or `--url` (`src/cli.ts:44`).
 2. Existing scans are parsed by `readWhifflerScan`; URL scans execute `node <whiffler> --json` through `execFile` (`src/technology.ts:70`, `src/technology.ts:88`).
 3. `buildTechnologyContext` filters technologies at confidence >= 30, keeps top detections, and creates recommendations (`src/technology.ts:92`).
 
 ### Pidge Handoff Path
 
-1. CLI passes a scrub run directory and routing options into `sendPidgeHandoff` (`src/cli.ts:68`).
+1. CLI passes a scrub-run directory and routing options into `sendPidgeHandoff` (`src/cli.ts:68`).
 2. `sendPidgeHandoff` validates agent names, parses `palette-run.json`, selects variants, writes a payload, collects attachments, and builds a `pidge send` command (`src/pidge.ts:36`).
 3. Dry runs return the command without executing; live runs call the Pidge executable with `execFile` (`src/pidge.ts:70`, `src/pidge.ts:80`).
 
 **State Management:**
 - There is no server state or database. State is held in generated files under caller-provided output directories.
-- Module-level constants define supported hue families, palette relationships, default external executable paths, and validation regexes (`src/color.ts:8`, `src/color.ts:21`, `src/technology.ts:68`, `src/pidge.ts:10`).
+- Module-level constants define supported hue families, palette relationships, default executable paths, and validation regexes (`src/color.ts:8`, `src/color.ts:21`, `src/technology.ts:68`, `src/pidge.ts:10`).
 
 ## Key Abstractions
 
 **PaletteRun:**
 - Purpose: Canonical generated palette artifact with variants and contrast checks.
 - Examples: `src/types.ts`, `src/color.ts`, `src/schemas.ts`
-- Pattern: TypeScript type plus runtime parser; always parse external JSON before exporting or handing off.
+- Pattern: TypeScript type plus runtime parser; parse external JSON before export or handoff.
 
 **PaletteRelationship:**
 - Purpose: Encodes tone, accent usage, chroma, contrast, and design relationship language.
@@ -141,17 +142,17 @@
 **RawReference:**
 - Purpose: Private archive of unsanitized Design Markdown and extracted identity markers.
 - Examples: `src/types.ts`, `src/scrub.ts`
-- Pattern: Write raw reference to run output, but exclude it from builder-facing handoffs unless explicitly included.
+- Pattern: Write raw reference to run output; exclude it from builder-facing handoffs unless explicitly included.
 
 **TechnologyContext:**
 - Purpose: Source-site technology evidence summarized for builder guidance.
 - Examples: `src/technology.ts`, `src/exports.ts`
-- Pattern: Preserve raw Whiffler scan inside context, but present detections/recommendations in briefs.
+- Pattern: Preserve raw Whiffler scan inside context; present detections/recommendations in briefs.
 
 **PidgeHandoffResult:**
 - Purpose: Describes a generated agent handoff payload, attachments, command, stdout, and dry-run state.
 - Examples: `src/pidge.ts`
-- Pattern: Build command arrays and execute with `execFile`, not shell strings.
+- Pattern: Build command arrays and execute with `execFile`.
 
 ## Entry Points
 
@@ -163,7 +164,7 @@
 **Commander Program:**
 - Location: `src/cli.ts`
 - Triggers: Runtime import from compiled CLI.
-- Responsibilities: Define commands, parse args, convert CLI errors to `rizzfizz: ...` stderr with non-zero exit code.
+- Responsibilities: Define commands, parse args, and convert CLI errors to `rizzfizz: ...` stderr with non-zero exit code (`src/cli.ts:165`).
 
 **Library Functions:**
 - Location: `src/color.ts`, `src/scrub.ts`, `src/exports.ts`, `src/technology.ts`, `src/pidge.ts`
@@ -172,7 +173,7 @@
 
 ## Architectural Constraints
 
-- **Runtime:** Node.js ESM with TypeScript `moduleResolution: NodeNext`; relative imports in source use `.js` suffixes for emitted ESM compatibility.
+- **Runtime:** Node.js ESM with TypeScript `moduleResolution: NodeNext`; source imports use `.js` suffixes for emitted ESM compatibility (`tsconfig.json`, `src/cli.ts`).
 - **Threading:** Single Node event loop; parallelism is limited to `Promise.all` for independent file writes in `src/scrub.ts` and `src/exports.ts`.
 - **Global state:** Supported hue and relationship presets are module-level constants in `src/color.ts`; default external executables are constants in `src/technology.ts` and `src/pidge.ts`.
 - **Circular imports:** No circular dependency chain detected in `src/`; dependencies flow from CLI to domain/integration modules, with shared types/schemas/io at the bottom.
@@ -211,7 +212,7 @@
 ## Cross-Cutting Concerns
 
 **Logging:** CLI commands print concise success paths and generated variant/attachment details in `src/cli.ts`.
-**Validation:** CLI option validation, palette JSON schema parsing, Whiffler scan parsing, hex color validation, agent-name regex validation.
+**Validation:** CLI option validation, palette JSON schema parsing, Whiffler scan parsing, hex color validation, and agent-name regex validation.
 **Authentication:** Not applicable in code. External tool access is filesystem/executable based for Waffle Whiffler and Pidge.
 **Filesystem:** Use `src/io.ts` for text/JSON files so output directories are created consistently.
 

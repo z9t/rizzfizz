@@ -4,28 +4,27 @@
 
 ## APIs & External Services
 
-**Local CLI Integrations:**
-- Waffle Whiffler - Technology fingerprint source for `rizzfizz tech-scan` and optional `scrub-md` technology context.
-  - SDK/Client: no npm SDK; `src/technology.ts` executes `node /Users/max/Documents/Code/whiffler/src/cli/whiffler.js --json <url>` with `execFile`.
+**Website Technology Fingerprinting:**
+- Waffle Whiffler - Optional technology detection feed for source-safe builder briefs.
+  - SDK/Client: No package import; `src/technology.ts` invokes the local Whiffler CLI with `execFile("node", [executable, "--json", url])`.
+  - Default executable: `/Users/max/Documents/Code/whiffler/src/cli/whiffler.js`.
+  - CLI surface: `rizzfizz tech-scan --url <url> --out <path>` and `rizzfizz scrub-md --tech-url <url>`.
   - Auth: Not detected.
-  - Inputs: URL via `--url` or existing Whiffler JSON via `--input` / `--tech-scan` in `src/cli.ts`.
-  - Output: `technology-context.json` with schema `rizzfizz.technology-context.v1` from `src/technology.ts`.
-- Pidge - Local agent handoff transport for completed RizzFizz runs.
-  - SDK/Client: no npm SDK; `src/pidge.ts` executes `pidge send` or a user-provided `--pidge <path>` with `execFile`.
-  - Auth: Not detected.
-  - Inputs: generated run directory with `palette-run.json`, `scrubbed-design-dna.json`, `variants-palette.json`, optional `technology-context.json`, and variant files in `src/pidge.ts`.
-  - Output: handoff payload under `<run>/pidge/payload-*.json` plus `pidge send` message.
+  - Network behavior: Network access is delegated to the Whiffler process for the provided URL; RizzFizz itself does not call `fetch`.
 
-**Generated Consumer Formats:**
-- a-eyes - Downstream-compatible palette token payload, but not a runtime dependency.
-  - SDK/Client: none; `src/exports.ts` writes schema `rizzfizz.a-eyes-variant-tokens.v1`.
-  - Auth: Not detected.
-  - Boundary: `HANDOFF.md` states this project can emit a-eyes-compatible payloads but does not modify any a-eyes workstream.
+**Agent Handoff Bus:**
+- Pidge - Optional local agent handoff transport for generated RizzFizz runs.
+  - SDK/Client: No package import; `src/pidge.ts` invokes the `pidge` executable with `execFile(command[0], command.slice(1))`.
+  - Default executable: `pidge` from `PATH`; can be overridden with `--pidge`.
+  - CLI surface: `rizzfizz handoff --input <dir> --to <agent>`.
+  - Auth: Not detected in RizzFizz; any auth or storage is owned by the external Pidge executable.
+  - Safety boundary: `src/pidge.ts` validates `--from` and `--to` agent names with `AGENT_NAME_RE`; raw source archive attachment requires explicit `--include-raw`.
 
-**Network Scanning:**
-- Target websites - Optional Whiffler scans use user-supplied URLs from `src/cli.ts` `--url` / `--tech-url`.
-  - SDK/Client: delegated to Whiffler through `src/technology.ts`.
-  - Auth: Not detected.
+**Builder Stack Recommendations:**
+- Generated briefs reference frameworks/libraries such as static HTML/CSS/JS, Astro, Next/React/TypeScript/Tailwind, shadcn/ui, Radix, lucide-react, Motion, GSAP, and Three.js in `src/exports.ts`.
+  - SDK/Client: Not runtime dependencies of RizzFizz.
+  - Auth: Not applicable.
+  - Purpose: These names are recommendations emitted into builder-facing artifacts, not imported packages.
 
 ## Data Storage
 
@@ -36,10 +35,10 @@
 
 **File Storage:**
 - Local filesystem only.
-- `src/io.ts` provides `readText`, `writeText`, `readJson`, and `writeJson` using `node:fs/promises`.
-- `scrub-md` writes run artifacts under the user-provided `--out` directory in `src/scrub.ts`.
-- `export` writes derived JSON, CSS, or Markdown outputs to user-provided paths in `src/exports.ts`.
-- `handoff` writes Pidge payload JSON under `<run>/pidge/` in `src/pidge.ts`.
+  - `src/io.ts` wraps `readFile`, `writeFile`, and recursive parent-directory creation.
+  - `src/scrub.ts` writes run artifacts: `raw-reference.json`, `scrubbed-design-dna.json`, `DESIGN-neutral.md`, `DESIGN-variant-*.md`, `design-md-variation-run.json`, `palette-run.json`, `tokens.css`, `variants-palette.json`, optional `technology-context.json`, and `builder-briefs/*.md`.
+  - `src/exports.ts` writes exported a-eyes token JSON, CSS variables, and builder brief Markdown.
+  - `src/pidge.ts` writes handoff payloads under `<run-dir>/pidge/payload-*.json`.
 
 **Caching:**
 - None detected.
@@ -48,54 +47,70 @@
 
 **Auth Provider:**
 - Not detected.
-  - Implementation: No app login, OAuth, API key, or session management detected in `src/**/*.ts`.
-
-**Identity Handling:**
-- Source identity scrubbing is a core data-safety feature, not authentication.
-- `src/scrub.ts` extracts URLs, emails, hex colors, font hints, and possible identity terms into `raw-reference.json`, then removes or replaces source identifiers for builder-facing outputs.
-- `raw-reference.json` is private source archive data and is excluded from Pidge attachments unless `--include-raw` is explicitly set in `src/cli.ts` and `src/pidge.ts`.
+  - Implementation: The CLI has no user accounts, sessions, tokens, OAuth flow, or API keys.
+  - Agent identity: `src/pidge.ts` accepts `--from` and `--to` labels for handoff routing and validates them as local agent names, not authenticated principals.
 
 ## Monitoring & Observability
 
 **Error Tracking:**
-- None detected.
+- None.
 
 **Logs:**
-- CLI status and errors through `console.log`, `console.error`, and `process.exitCode` in `src/cli.ts`.
-- External command stdout is captured and returned from Pidge sends in `src/pidge.ts`.
-- Whiffler stdout is parsed as JSON in `src/technology.ts`; no structured runtime logging layer is present.
+- CLI status and errors use stdout/stderr.
+  - `src/cli.ts` prints successful write locations for commands.
+  - `src/cli.ts` catches command errors, writes `rizzfizz: <message>` to stderr, and sets `process.exitCode = 1`.
+  - External tool stdout is captured for Pidge handoffs in `src/pidge.ts`; Whiffler stdout is parsed as JSON in `src/technology.ts`.
 
 ## CI/CD & Deployment
 
 **Hosting:**
 - Not detected.
-- The project is a local Node CLI with binary entrypoint `bin/cli.js` and compiled output in `dist/`.
+  - RizzFizz is a local Node CLI package with `bin.rizzfizz` mapped to `bin/cli.js`.
 
 **CI Pipeline:**
-- None detected in repository files scanned.
-- Local verification commands are defined in `package.json`: `npm run build`, `npm run check`, `npm test`, and `npm run smoke`.
+- None detected in the repo scan.
+  - No `.github/workflows` directory is present.
+  - Verification commands are npm scripts in `package.json`: `npm run build`, `npm run check`, `npm test`, and `npm run smoke`.
 
 ## Environment Configuration
 
 **Required env vars:**
-- None detected for application runtime.
-- `PIDGE_ROOT` is used only in `test/cli.test.js` to isolate real Pidge integration tests.
+- None detected for runtime.
+- `PIDGE_ROOT` appears in `test/cli.test.js` only to isolate Pidge test behavior.
 
 **Secrets location:**
-- Not detected.
-- No `.env` or `.env.*` files detected at repo depth 3.
-- Do not add secrets to generated run artifacts; `raw-reference.json` can contain private source text by design and should stay out of builder-facing handoffs unless explicitly required.
+- No root `.env*` files detected.
+- No credential, key, or secret files were read.
+- Optional external tools may have their own configuration outside this repository; RizzFizz does not manage those secrets.
 
 ## Webhooks & Callbacks
 
 **Incoming:**
-- None detected.
-- There is no HTTP server, webhook route, or callback listener in `src/**/*.ts`.
+- None. No HTTP server, webhook route, or callback endpoint is implemented.
 
 **Outgoing:**
-- No direct HTTP client calls detected in source.
-- Outgoing network behavior can occur indirectly when Whiffler scans a user-provided URL through `src/technology.ts`.
-- Local outgoing agent-bus messages are sent with `pidge send` from `src/pidge.ts`.
+- Waffle Whiffler subprocess call for optional URL scans from `src/technology.ts`.
+- Pidge subprocess call for optional agent handoffs from `src/pidge.ts`.
+- File writes to caller-provided local paths from `src/io.ts`, `src/scrub.ts`, `src/exports.ts`, and `src/pidge.ts`.
+
+## Data Sources
+
+**Design Markdown Inputs:**
+- `src/scrub.ts` reads caller-provided Design Markdown files via `--input`.
+- Raw text, URLs, colors, font hints, and possible identity terms are preserved privately in `raw-reference.json`; source-safe outputs scrub URLs, emails, clone language, and identity terms.
+
+**Whiffler JSON Inputs:**
+- `src/technology.ts` reads existing Whiffler JSON via `readWhifflerScan(path)`.
+- `src/cli.ts` exposes this as `rizzfizz tech-scan --input <path>` and `rizzfizz scrub-md --tech-scan <path>`.
+
+**Generated Run Inputs:**
+- `src/exports.ts` consumes `palette-run.json` and `scrubbed-design-dna.json` from a RizzFizz run directory for export commands.
+- `src/pidge.ts` consumes `palette-run.json` plus optional generated artifacts from a RizzFizz run directory for handoff payloads and attachments.
+
+**Reference/Test Fixtures:**
+- `test/fixtures/DESIGN-source.md` provides a scrub input fixture.
+- `test/fixtures/waffle-scan.json` provides a Whiffler scan fixture.
+- `GitHubPalleteRepos/` and root JSON analysis files are reference/corpus material, not runtime dependencies.
 
 ---
 

@@ -5,39 +5,44 @@
 ## Test Framework
 
 **Runner:**
-- Node built-in test runner (`node --test`) with Node >=22, enforced by `scripts/require-node22.mjs` through `pretest` in `package.json`.
-- Config: Not detected; tests rely on Node defaults and `package.json` scripts.
+- Node.js built-in test runner (`node --test`)
+- Config: no separate test config file detected
+- Tests run against compiled JavaScript in `dist/`, so `npm test` runs `npm run build` first in `package.json:16`.
 
 **Assertion Library:**
-- Node built-in `node:assert/strict`, used in `test/color.test.js` and `test/cli.test.js`.
+- `node:assert/strict`, imported as `assert` in `test/color.test.js:1` and `test/cli.test.js:1`.
 
 **Run Commands:**
 ```bash
-npm run check          # Type-check src/**/*.ts with strict TypeScript
-npm test               # Build dist, then run node --test
-npm run smoke          # Build and exercise palette + export CLI path
-npm run build          # Compile TypeScript to dist/
+npm test             # Build with tsc, then run all node:test files
+npm run check        # TypeScript no-emit check
+npm run build        # Compile TypeScript to dist/
+npm run smoke        # Build, generate a palette JSON, then export a-eyes tokens
 ```
+
+**Node Requirement:**
+- All quality commands are guarded by `scripts/require-node22.mjs` through `prebuild`, `precheck`, `pretest`, and `presmoke` in `package.json:10`.
+- `package.json:27` declares `node >=22`.
 
 ## Test File Organization
 
 **Location:**
-- Tests live under `test/`, separate from `src/`.
-- Fixtures live under `test/fixtures/`.
-- Tests import compiled output from `dist/` or execute `bin/cli.js`; `npm test` builds before running tests.
+- Tests live in the top-level `test/` directory.
+- Fixtures live in `test/fixtures/`.
+- Source tests import `../dist/*.js`, not `../src/*.ts`; run `npm run build` before invoking `node --test` directly.
 
 **Naming:**
-- Use `<feature>.test.js`: `test/color.test.js`, `test/cli.test.js`.
-- Use fixture names that describe external artifact shape: `test/fixtures/DESIGN-source.md`, `test/fixtures/waffle-scan.json`.
+- Use `*.test.js` filenames: `test/color.test.js`, `test/cli.test.js`.
+- Name tests with behavior-oriented sentences, such as `palette command writes palette-run JSON` in `test/cli.test.js:14`.
 
 **Structure:**
 ```text
 test/
-├── cli.test.js              # CLI workflow and integration tests
-├── color.test.js            # Palette/color unit tests against dist/color.js
+├── color.test.js              # Pure palette/color behavior tests against dist/color.js
+├── cli.test.js                # CLI integration tests through bin/cli.js
 └── fixtures/
-    ├── DESIGN-source.md     # Scrub source fixture with identity/URL data
-    └── waffle-scan.json     # Whiffler scan fixture for tech context tests
+    ├── DESIGN-source.md       # Design Markdown source fixture for scrub-md
+    └── waffle-scan.json       # Waffle Whiffler JSON fixture for tech-scan
 ```
 
 ## Test Structure
@@ -51,16 +56,18 @@ import { buildPaletteRun } from "../dist/color.js";
 test("palette run includes required tokens and no required contrast failures", () => {
   const run = buildPaletteRun({ relationship: "dark-sparse-accent", hue: "blue", variants: 4, source: "test" });
   assert.equal(run.variants.length, 4);
-  assert.deepEqual(run.variants[0].checks.failures, []);
+  for (const variant of run.variants) {
+    assert.deepEqual(variant.checks.failures, []);
+  }
 });
 ```
 
 **Patterns:**
-- Use top-level `test("behavior description", fn)` calls, not nested suites.
-- Use `mkdtemp(join(tmpdir(), "rizzfizz-test-"))` for CLI output isolation.
-- Always clean temporary directories in `finally` with `rm(dir, { recursive: true, force: true })`.
-- Parse generated JSON with `JSON.parse(await readFile(..., "utf8"))` and assert schema strings, counts, and key fields.
-- Execute CLI behavior with `execFileAsync("node", [cli, ...args])` rather than shell strings.
+- Use one `test()` per user-visible behavior or pure algorithm behavior.
+- For pure module tests, import compiled functions from `dist/` and assert exact properties or regex patterns, as in `test/color.test.js:5`.
+- For CLI integration tests, execute `node bin/cli.js ...` with `execFile`, read generated files, and assert artifact schema fields/content, as in `test/cli.test.js:18`.
+- Use `try/finally` cleanup for temporary directories in every filesystem integration test, as in `test/cli.test.js:14`.
+- Assert schema/version strings for generated JSON artifacts, such as `rizzfizz.palette-run.v1` and `rizzfizz.technology-context.v1`.
 
 ## Mocking
 
@@ -68,18 +75,29 @@ test("palette run includes required tokens and no required contrast failures", (
 
 **Patterns:**
 ```javascript
-const waffleFixture = new URL("./fixtures/waffle-scan.json", import.meta.url).pathname;
-await execFileAsync("node", [cli, "tech-scan", "--input", waffleFixture, "--out", techContextPath]);
+const execFileAsync = promisify(execFile);
+const cli = new URL("../bin/cli.js", import.meta.url).pathname;
+const fixture = new URL("./fixtures/DESIGN-source.md", import.meta.url).pathname;
+
+const dir = await mkdtemp(join(tmpdir(), "rizzfizz-test-"));
+try {
+  await execFileAsync("node", [cli, "scrub-md", "--input", fixture, "--variants", "2", "--out", dir]);
+  const variants = JSON.parse(await readFile(join(dir, "variants-palette.json"), "utf8"));
+  assert.equal(variants.variants.length, 2);
+} finally {
+  await rm(dir, { recursive: true, force: true });
+}
 ```
 
 **What to Mock:**
-- Prefer static fixtures for external scan input, as in `test/fixtures/waffle-scan.json`.
-- Prefer isolated temp directories and environment overrides for filesystem-backed integrations, as in `PIDGE_ROOT: busRoot` in `test/cli.test.js`.
+- Prefer fixtures over mocks for external input formats. `test/fixtures/waffle-scan.json` stands in for Waffle Whiffler output in `test/cli.test.js:67`.
+- Prefer isolated environment variables over mocks for local tools that write state. The Pidge integration test sets `PIDGE_ROOT` to a temp bus directory in `test/cli.test.js:139`.
+- Use `--dry-run` modes for command construction and payload assertions when available, as in the Pidge handoff dry-run test at `test/cli.test.js:87`.
 
 **What NOT to Mock:**
-- Do not mock the CLI process for command tests; execute `bin/cli.js` with `execFile`.
-- Do not mock generated artifact reads; inspect actual files written by the command.
-- Do not hit live URLs in default tests; use `--input` fixtures for Whiffler-derived behavior.
+- Do not mock the CLI process for command behavior; invoke `bin/cli.js` through `execFile` so Commander option parsing, stdout, generated files, and exit behavior are exercised together.
+- Do not mock filesystem writes for artifact workflows; tests should inspect actual output files under `mkdtemp` directories.
+- Do not mock pure color calculations; assert deterministic outputs, regex formats, contrast thresholds, and no required failures directly.
 
 ## Fixtures and Factories
 
@@ -87,13 +105,16 @@ await execFileAsync("node", [cli, "tech-scan", "--input", waffleFixture, "--out"
 ```javascript
 const fixture = new URL("./fixtures/DESIGN-source.md", import.meta.url).pathname;
 const waffleFixture = new URL("./fixtures/waffle-scan.json", import.meta.url).pathname;
-const dir = await mkdtemp(join(tmpdir(), "rizzfizz-test-"));
 ```
 
 **Location:**
-- Markdown source fixture: `test/fixtures/DESIGN-source.md`.
-- Whiffler JSON fixture: `test/fixtures/waffle-scan.json`.
-- Runtime output fixtures should be created under OS temp directories, not committed.
+- `test/fixtures/DESIGN-source.md`: source Design Markdown fixture used by `scrub-md` CLI tests.
+- `test/fixtures/waffle-scan.json`: Waffle Whiffler scan fixture used by `tech-scan` and `scrub-md --tech-scan` tests.
+
+**Factory Pattern:**
+- There are no shared fixture factory helpers.
+- For generated test data, build it inline with production APIs where practical, such as `buildPaletteRun({ relationship, hue, variants, source })` in `test/color.test.js:30`.
+- For CLI integration artifacts, create a fresh temp directory per test with `mkdtemp(join(tmpdir(), "rizzfizz-test-"))`.
 
 ## Coverage
 
@@ -104,21 +125,33 @@ const dir = await mkdtemp(join(tmpdir(), "rizzfizz-test-"));
 node --test --experimental-test-coverage
 ```
 
-No npm coverage script or coverage threshold is configured in `package.json`.
+**Coverage Notes:**
+- No `coverage` npm script exists in `package.json`.
+- No coverage thresholds or reports are configured.
+- The current test suite covers core color transformations, palette generation, CLI artifact generation, tech scan fixture summarization, and Pidge handoff happy paths.
 
 ## Test Types
 
 **Unit Tests:**
-- `test/color.test.js` covers color conversion, hue interpolation, easing, contrast ratio, and generated palette token shape against `dist/color.js`.
-- Add unit tests beside this style for pure functions in `src/schemas.ts`, `src/technology.ts`, `src/scrub.ts`, and `src/pidge.ts` when behavior can be checked without running the CLI.
+- `test/color.test.js` covers pure color and palette generation behavior:
+  - hex parsing and OKLCH conversion at `test/color.test.js:5`
+  - hue interpolation wraparound at `test/color.test.js:11`
+  - easing behavior at `test/color.test.js:20`
+  - WCAG contrast ratio calculations at `test/color.test.js:25`
+  - palette token presence and contrast failure checks at `test/color.test.js:30`
 
 **Integration Tests:**
-- `test/cli.test.js` covers CLI commands through `bin/cli.js`: `palette`, `scrub-md`, `export`, `tech-scan`, and `handoff`.
-- Integration tests verify real output files, schema fields, source-safety redaction, generated briefs, and isolated Pidge bus behavior.
+- `test/cli.test.js` covers CLI flows by executing `bin/cli.js`:
+  - `palette` writes palette-run JSON at `test/cli.test.js:14`
+  - `scrub-md` writes private and builder-facing artifacts while removing source identity from public outputs at `test/cli.test.js:27`
+  - `export` writes a-eyes tokens, CSS vars, and agent briefs at `test/cli.test.js:47`
+  - `tech-scan` summarizes Whiffler JSON and carries context into briefs at `test/cli.test.js:67`
+  - `handoff` creates dry-run Pidge payloads at `test/cli.test.js:87`
+  - `handoff` sends through a real Pidge executable with isolated `PIDGE_ROOT` at `test/cli.test.js:120`
 
 **E2E Tests:**
-- No browser or Playwright E2E tests are used.
-- No live network E2E tests are used by default.
+- No browser or Playwright E2E tests are present.
+- The CLI smoke path in `package.json:17` is the closest end-to-end check. It builds, generates `/tmp/rizzfizz-smoke-palette.json`, then exports `/tmp/rizzfizz-smoke-aeyes.json`.
 
 ## Common Patterns
 
@@ -139,33 +172,53 @@ test("palette command writes palette-run JSON", async () => {
 
 **Error Testing:**
 ```javascript
-await assert.rejects(
-  () => execFileAsync("node", [cli, "palette", "--variants", "0", "--out", out]),
-  /Expected positive integer/
-);
+test("invalid palette schema is rejected", () => {
+  assert.throws(
+    () => paletteRunSchema.parse({ schema: "wrong", variants: [] }),
+    /palette run schema/
+  );
+});
 ```
 
-Error-path tests are a coverage gap: current tests focus on successful commands and artifact output.
-
-## Quality Commands
-
-```bash
-npm run check          # Static type quality gate
-npm test               # Build + all Node tests
-npm run smoke          # Build + palette/export smoke path
-```
-
-Run `npm run check` before edits that change TypeScript types or module imports. Run `npm test` before finishing behavior changes. Run `npm run smoke` after changes to CLI packaging, `bin/cli.js`, palette output, or export formats.
+The example above is the preferred style for new negative-path tests. Current tests do not include `assert.throws` or rejected-promise coverage.
 
 ## Likely Coverage Gaps
 
-- Schema rejection paths are lightly covered: malformed `palette-run.json` cases in `src/schemas.ts` and malformed Whiffler JSON in `src/technology.ts` need `assert.throws` or `assert.rejects` tests.
-- CLI error paths are lightly covered: unsupported export format, missing `--url`/`--input` for `tech-scan`, invalid variant counts, bad seed hex, and invalid Pidge agent names should be tested through `execFileAsync`.
-- Palette generation is sampled only for `dark-sparse-accent`; relationship presets in `src/color.ts` should each have token/contrast assertions.
-- Scrubbing tests verify one URL and one source identity fixture; add cases for email removal, clone-language replacement, multiple identity terms, proprietary font hints, and whitespace normalization in `src/scrub.ts`.
-- Pidge tests cover dry-run and isolated real send, but not missing executable, invalid `--variant`, `--include-raw`, or attachment collection when optional files are absent in `src/pidge.ts`.
-- Technology recommendations use one fixture. Add fixtures for CMS/ecommerce, graphics libraries, no scripts, and low-confidence detections to exercise branches in `src/technology.ts`.
-- No coverage threshold exists. Use `node --test --experimental-test-coverage` manually when changing shared parser or scrub logic.
+**Schema validation failures:**
+- What's not tested: invalid palette-run objects, bad hex colors, missing fields, invalid enum values, malformed Whiffler scans.
+- Files: `src/schemas.ts`, `src/technology.ts`
+- Risk: malformed input could produce unclear errors or partial artifacts.
+- Priority: High when changing schema or import/export behavior.
+
+**CLI failure paths:**
+- What's not tested: missing required files, unsupported export format, invalid `--variants`, missing `--url`/`--input` for `tech-scan`, missing Pidge/Whiffler executables.
+- Files: `src/cli.ts`, `src/pidge.ts`, `src/technology.ts`
+- Risk: user-facing CLI errors can regress without failing tests.
+- Priority: High for CLI option or external-tool changes.
+
+**Scrub/privacy edge cases:**
+- What's not tested directly: email removal, multiple URL shapes, identity terms extracted from paths and URLs, clone-language replacement variants, short identity term handling.
+- Files: `src/scrub.ts`
+- Risk: builder-facing artifacts may leak source identity or over-scrub useful neutral content.
+- Priority: High for scrub logic changes.
+
+**Artifact shape depth:**
+- What's not tested: full JSON structure for `scrubbed-design-dna.json`, `design-md-variation-run.json`, `tokens.css` completeness, per-variant builder brief content beyond a few strings.
+- Files: `src/scrub.ts`, `src/exports.ts`, `src/color.ts`
+- Risk: downstream agents may receive incomplete or incompatible artifacts.
+- Priority: Medium.
+
+**External command boundaries:**
+- What's not tested: Whiffler timeout arguments, aggressive scan flag, `execFile` failures, stdout that is not JSON, large output handling, Pidge command quoting for summaries/context hints with spaces.
+- Files: `src/technology.ts`, `src/pidge.ts`
+- Risk: local integrations fail in real workflows even if fixture tests pass.
+- Priority: Medium.
+
+**Relationship/hue matrix:**
+- What's not tested: all palette relationship presets, all hue families, variant clamping to 1..12, default normalization for unknown relationship/hue values.
+- Files: `src/color.ts`
+- Risk: less common palette options can drift or generate weak contrast.
+- Priority: Medium.
 
 ---
 

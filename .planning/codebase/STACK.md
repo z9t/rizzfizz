@@ -5,76 +5,79 @@
 ## Languages
 
 **Primary:**
-- TypeScript 5.9.3 - Source implementation under `src/**/*.ts`; compiled with `tsc -p tsconfig.json` from `package.json`.
-- JavaScript ESM - Runtime entrypoint `bin/cli.js`, built output `dist/**/*.js`, tests under `test/*.test.js`, and Node guard `scripts/require-node22.mjs`.
+- TypeScript - Source code lives under `src/**/*.ts`; `tsconfig.json` compiles from `src` to `dist` with `strict` mode and declaration output.
+- JavaScript - Runtime entrypoint and tests use ESM JavaScript in `bin/cli.js`, `scripts/require-node22.mjs`, and `test/*.test.js`.
 
 **Secondary:**
-- Markdown - User-facing docs and fixture input such as `README.md`, `START-HERE.md`, `HANDOFF.md`, and `test/fixtures/DESIGN-source.md`.
-- JSON - Generated run artifacts and fixtures such as `test/fixtures/waffle-scan.json`; package metadata in `package.json` and `package-lock.json`.
+- Markdown - Product handoff and prompt/reference documentation live in `README.md`, `START-HERE.md`, `HANDOFF.md`, `HIGH-END-AI-WEBSITE-STACK-2026-05.md`, and `PROMPT-palette-engine-mvp.md`.
+- JSON - Generated/reference artifacts include `color-analysis-output.json`, `color_repo_analysis.json`, and test fixtures such as `test/fixtures/waffle-scan.json`.
 
 ## Runtime
 
 **Environment:**
-- Node.js >=22 required by `package.json` `engines.node`.
-- Local pin is Node 22.22.2 in `.nvmrc` and `.node-version`.
-- ESM runtime via `"type": "module"` in `package.json` and `module: "NodeNext"` in `tsconfig.json`.
+- Node.js >=22 is required by `package.json` `engines.node` and enforced before build/check/test/smoke by `scripts/require-node22.mjs`.
+- Local Node version pins are `22.22.2` in `.nvmrc` and `.node-version`.
+- The package is ESM-first via `"type": "module"` in `package.json`.
 
 **Package Manager:**
-- npm, inferred from `package-lock.json` lockfile v3.
-- Lockfile: present at `package-lock.json`.
+- npm, using `package-lock.json` lockfile version 3.
+- Lockfile: present (`package-lock.json`).
 
 ## Frameworks
 
 **Core:**
-- commander 14.0.3 - CLI command routing and option parsing in `src/cli.ts`.
-- culori 4.0.2 - OKLCH/OKLab parsing, conversion, interpolation, RGB clamping, and hex formatting in `src/color.ts` through `src/culori-require.ts`.
-- Node standard library - Filesystem, path handling, child process execution, module require bridge, and test runner across `src/io.ts`, `src/pidge.ts`, `src/technology.ts`, `src/culori-require.ts`, and `test/*.test.js`.
+- Commander `^14.0.2` - CLI command registration and option parsing in `src/cli.ts`.
+- Culori `^4.0.2` - OKLCH/OKLab parsing, conversion, RGB clamping, and hex formatting through `src/color.ts` and the CommonJS bridge in `src/culori-require.ts`.
+- Node built-ins - `node:fs/promises`, `node:path`, `node:child_process`, `node:util`, and `node:module` are used for local IO, subprocess integrations, and CommonJS interop.
 
 **Testing:**
-- node:test - Built-in test runner used by `test/color.test.js` and `test/cli.test.js`.
-- node:assert/strict - Assertions in `test/color.test.js` and `test/cli.test.js`.
+- Node test runner - `npm test` builds with TypeScript and runs `node --test`; tests are in `test/color.test.js` and `test/cli.test.js`.
+- Node assert - Assertions use `node:assert/strict` in `test/*.test.js`.
 
 **Build/Dev:**
-- TypeScript 5.9.3 - Build and check tool configured by `tsconfig.json`; emits declarations and JS to `dist/`.
-- npm scripts - `build`, `check`, `test`, and `smoke` are defined in `package.json`.
-- Node version guard - `scripts/require-node22.mjs` runs before build/check/test/smoke via npm pre-scripts in `package.json`.
+- TypeScript `^5.9.3` - `npm run build` executes `tsc -p tsconfig.json`; `npm run check` runs the same project with `--noEmit`.
+- `@types/node` `^22.19.1` - Node type declarations for development.
+- npm scripts in `package.json` gate `build`, `check`, `test`, and `smoke` with the Node 22 preflight script.
 
 ## Key Dependencies
 
 **Critical:**
-- `commander` 14.0.3 - Defines the public `rizzfizz` CLI command surface in `src/cli.ts`: `scrub-md`, `tech-scan`, `handoff`, `palette`, `export`, and `css-vars`.
-- `culori` 4.0.2 - Core color engine dependency for OKLCH conversion and contrast-safe palette output in `src/color.ts`.
+- `commander` `^14.0.2` - Owns the `rizzfizz` CLI command surface in `src/cli.ts`, including `scrub-md`, `tech-scan`, `handoff`, `palette`, `export`, and `css-vars`.
+- `culori` `^4.0.2` - Owns the color engine's OKLCH conversion path in `src/color.ts`; failures here affect palette generation, contrast checks, token output, and exported briefs.
 
 **Infrastructure:**
-- `@types/node` 22.19.17 - Type support for Node APIs during TypeScript compilation in `package-lock.json`.
-- `typescript` 5.9.3 - Compiler used by `npm run build` and `npm run check` in `package.json`.
-- `undici-types` 6.21.0 - Transitive dependency of `@types/node` recorded in `package-lock.json`.
+- `typescript` `^5.9.3` - Produces distributable JavaScript in `dist` from `src`.
+- `@types/node` `^22.19.1` - Provides compile-time Node API coverage.
+- Waffle Whiffler external CLI - Invoked by `src/technology.ts` through `node /Users/max/Documents/Code/whiffler/src/cli/whiffler.js --json <url>` unless overridden.
+- Pidge external CLI - Invoked by `src/pidge.ts` as `pidge send ...` unless overridden by `--pidge`.
 
 ## Configuration
 
 **Environment:**
-- No `.env` or `.env.*` files detected at repo depth 3.
-- No required application secrets detected in `src/**/*.ts`; `rg` found no `process.env` usage in source.
-- `PIDGE_ROOT` appears only in `test/cli.test.js` to isolate the external Pidge bus during integration-style tests.
-- Runtime Node version is configured through `.nvmrc`, `.node-version`, `package.json`, and `scripts/require-node22.mjs`.
+- No `.env*` files are present at the repo root.
+- Runtime configuration is primarily CLI flags handled in `src/cli.ts`.
+- `PIDGE_ROOT` is only used by tests when invoking external Pidge behavior in `test/cli.test.js`; production code delegates Pidge storage behavior to the `pidge` executable.
+- Required local tools for optional integrations: Whiffler at `/Users/max/Documents/Code/whiffler/src/cli/whiffler.js` for default technology scans, and `pidge` on `PATH` for non-dry-run handoffs.
 
 **Build:**
-- `tsconfig.json` uses `target: "ES2022"`, `module: "NodeNext"`, `moduleResolution: "NodeNext"`, `strict: true`, `rootDir: "src"`, `outDir: "dist"`, and `declaration: true`.
-- `package.json` exposes the CLI binary as `rizzfizz` at `bin/cli.js`.
-- `bin/cli.js` imports `../dist/cli.js`, so build output must exist before linked CLI use.
-- `package.json` `smoke` builds, generates a palette JSON file, and exports a-eyes-compatible token JSON under `/tmp`.
+- `package.json` defines scripts, dependencies, binary mapping, and Node engine requirements.
+- `tsconfig.json` uses `target: ES2022`, `module: NodeNext`, `moduleResolution: NodeNext`, `strict: true`, `rootDir: src`, `outDir: dist`, and `declaration: true`.
+- `bin/cli.js` is a checked-in executable shim that imports `../dist/cli.js`; build output must exist before invoking the package binary.
+- No ESLint, Prettier, Jest, Vitest, Vite, Next, or bundler config files are detected at the repo root.
 
 ## Platform Requirements
 
 **Development:**
-- Run `nvm use` or otherwise provide Node 22.22.2 / Node >=22 before npm scripts; `scripts/require-node22.mjs` exits on older Node majors.
-- Run `npm install` with `package-lock.json`, then `npm run build`, `npm run check`, and `npm test`.
-- Use `npm link` for global local CLI usage as documented in `README.md`.
+- Run `nvm use` or equivalent to select Node `22.22.2`, then `npm install`.
+- Run `npm run build` before executing `node bin/cli.js` or linked `rizzfizz` because the bin shim loads `dist/cli.js`.
+- Use `npm run check` for type-only verification and `npm test` for build plus Node test runner coverage.
+- Use `npm run smoke` to verify palette generation and a-eyes token export through the built CLI.
 
 **Production:**
-- Intended deployment target is a local/CLI Node tool, not a web server.
-- `dist/` and `bin/cli.js` are the runtime artifacts; `README.md` documents `node bin/cli.js --help` and linked `rizzfizz` usage.
-- Optional local external tools are needed only for specific commands: Whiffler for `tech-scan --url` / `scrub-md --tech-url`, and Pidge for `handoff`.
+- Deployment target is a local/linked Node CLI package, not a web server.
+- The published/linked executable is `rizzfizz` from `bin/cli.js`.
+- Optional production capabilities depend on local external executables: Whiffler for `tech-scan --url` and Pidge for `handoff` without `--dry-run`.
+- Persistent output is filesystem-based under caller-provided paths such as run directories and exported JSON/CSS/Markdown files.
 
 ---
 
