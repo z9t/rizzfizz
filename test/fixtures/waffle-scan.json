@@ -1,0 +1,47 @@
+{
+  "url": "https://example.test",
+  "status": 200,
+  "technologies": [
+    {
+      "name": "Next.js",
+      "confidence": 100,
+      "versions": ["15.0.0"],
+      "categories": ["JavaScript frameworks"],
+      "website": "https://nextjs.org",
+      "evidence": [
+        {
+          "channel": "scriptSrc",
+          "confidence": 100,
+          "pattern": "_next/static",
+          "value": "https://example.test/_next/static/chunks/app.js"
+        }
+      ]
+    },
+    {
+      "name": "Cloudflare",
+      "confidence": 100,
+      "versions": [],
+      "categories": ["CDN"],
+      "website": "https://www.cloudflare.com",
+      "evidence": [
+        {
+          "channel": "header",
+          "confidence": 100,
+          "pattern": "^cloudflare$",
+          "value": "Server: cloudflare"
+        }
+      ]
+    }
+  ],
+  "features": {
+    "header_count": 8,
+    "cookie_count": 0,
+    "html_length": 4000,
+    "script_count": 4,
+    "css_count": 2,
+    "meta_count": 6,
+    "probe_count": 0,
+    "probe_2xx_3xx": 0
+  },
+  "aggressive": false
+}

@@ -1,0 +1,57 @@
+[
+  {
+    "name": "henngelm/background-generator-javascript",
+    "type": "gradient_generator",
+    "url": "https://github.com/henngelm/background-generator-javascript",
+    "color_selection_method": "dual_html_color_inputs_with_random_hex",
+    "description": "Uses two HTML <input type='color'> pickers (yielding hex values like #ff0000) plus a 'Random Generator' button that generates random 24-bit hex colors using Math.random()*0xFFFFFF shifted to integer then converted to hex string. Defaults: green (#00ff00) to red (#ff0000). Applies selected colors as CSS linear-gradient on the body background.",
+    "color_space": "hex_RGB",
+    "random_generation": true,
+    "random_algorithm": "Math.random()*0xFFFFFF<<0 then .toString(16)",
+    "color_theory_used": "none",
+    "hsl_used": false,
+    "code_key_lines": {
+      "random_color_generation": "'#'+(Math.random()*0xFFFFFF<<0).toString(16)",
+      "gradient_application": "linear-gradient(to right, ${color1.value}, ${color2.value})"
+    }
+  },
+  {
+    "name": "MichaelRendon/Background-Generator",
+    "type": "gradient_selector",
+    "url": "https://github.com/MichaelRendon/Background-Generator",
+    "color_selection_method": "dual_html_color_inputs_only",
+    "description": "Pure manual color selection via two HTML <input type='color'> pickers. No random generation, no algorithmic selection. Default values: cyan (#11D8EE) and magenta (#FC03E9). User manually picks both gradient endpoints using the browser's native color picker widget. Results applied as CSS linear-gradient on body.",
+    "color_space": "hex_RGB",
+    "random_generation": false,
+    "random_algorithm": null,
+    "color_theory_used": "none",
+    "hsl_used": false,
+    "code_key_lines": {
+      "gradient_application": "\"linear-gradient(to right, \" + color1.value + \",\" + color2.value + \")\"",
+      "default_colors": "color1='#11D8EE', color2='#FC03E9'"
+    }
+  },
+  {
+    "name": "Refactoring UI",
+    "type": "commercial_book_and_methodology",
+    "url": "https://refactoringui.com",
+    "color_selection_method": "manual_systematic_shade_definition",
+    "description": "Commercial book/product by Adam Wathan & Steve Schoger (Tailwind CSS creators). Their documented color approach (from the public article 'Building Your Color Palette' at /previews/building-your-color-palette/) explicitly REJECTS algorithmic color palette generators. Instead prescribes a systematic but fully manual methodology: (1) Define 3 categories: Greys (8-10 shades for text/backgrounds/panels), Primary colors (1-2 with 5-10 shades each), Accent colors (multiple with 5-10 shades each). (2) Choose a base color (mid-range, suitable as button background). (3) Find edges manually by adjusting saturation and lightness - darkest shade for text, lightest for tinted backgrounds. (4) Fill gaps via divide-and-conquer: pick shade 700 (between darkest and base), shade 300 (between base and lightest), then fill 800, 600, 400, 200. Uses a 9-step numbering system (100-900, base at 500). Explicitly advises AGAINST automated CSS preprocessor functions like 'lighten'/'darken' for generating shades. Core philosophy: 'It's not a science - trust your eyes, not the numbers.'",
+    "color_space": "not_specified_explicitly",
+    "random_generation": false,
+    "random_algorithm": null,
+    "color_theory_used": "none_manual_visual",
+    "hsl_used": false,
+    "key_principles": [
+      "Define fixed shade sets upfront, not generated on-the-fly",
+      "Reject algorithmic palette generators (triad, major fourth, etc.)",
+      "Manual visual adjustment of saturation and lightness",
+      "Divide-and-conquer gap filling between darkest, base, and lightest",
+      "9-step numeric scale: 100 (lightest) through 900 (darkest)",
+      "True black avoided in favor of dark grey",
+      "Semantic color categories: greys, primary, accent",
+      "No scientific/mathematical formula - trust eyes over numbers"
+    ],
+    "key_article_url": "https://refactoringui.com/previews/building-your-color-palette/"
+  }
+]

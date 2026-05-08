@@ -1,0 +1,284 @@
+[
+  {
+    "repo": "jxnblk/palx",
+    "name": "Palx",
+    "description": "Automatic UI color palette generator from a single base color",
+    "core_file": "palx/src/index.js",
+    "color_spaces": ["HSL"],
+    "dependencies": ["chroma-js"],
+    "approach_classification": "Hue rotation + luminance stepping",
+    "core_algorithm": {
+      "summary": "Takes a single hex color, extracts HSL, then generates 12 evenly-spaced hue variations at 30-degree intervals around the color wheel, each with 10 luminance-stepped shades, plus a black and gray key.",
+      "steps": [
+        "1. Parse input hex to HSL via chroma-js",
+        "2. Generate 12 equidistant hues at 30° intervals from the base hue: hue_i = (base_hue + i * 30) % 360",
+        "3. For each hue (including gray and black), generate 10 luminance levels: lums = [0.95, 0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.25, 0.15, 0.05]",
+        "4. Gray key: desaturate base color to 1/8 saturation, then generate the 10 luminance levels",
+        "5. Black key: desaturate to 1/8, then set luminance to 0.05",
+        "6. Name each hue using a 12-name color wheel (red, orange, yellow, lime, green, teal, cyan, blue, indigo, violet, fuchsia, pink)"
+      ],
+      "key_formulas": {
+        "hue_step": "360 / 12 = 30°",
+        "luminance_levels": "[9,8,7,6,5,4,3,2,1,0].map(n => (n + 0.5) / 10) = [0.95, 0.85, ..., 0.05]",
+        "desaturation_for_gray_black": "1/8 (0.125)",
+        "black_luminance": "0.05",
+        "hue_name_index": "Math.round((hue - 2) / 30)"
+      }
+    },
+    "notable_techniques": [
+      "Simple, elegant approach: one base color → full UI palette (12 hues × 10 shades + black + gray = 122 colors)",
+      "Uses chroma-js for accurate HSL↔hex conversions",
+      "Luminance stepping creates perceptually even lightness gradations"
+    ]
+  },
+  {
+    "repo": "ant-design/ant-design-colors",
+    "name": "Ant Design Colors",
+    "description": "Ant Design's official color palette calculator for design system color scales",
+    "core_file": "src/generate.ts",
+    "color_spaces": ["HSV"],
+    "dependencies": ["@ant-design/fast-color"],
+    "approach_classification": "Fixed-step HSV manipulation with directional hue rotation",
+    "core_algorithm": {
+      "summary": "Generates exactly 10 colors (5 lighter + base + 4 darker) from a single input color by applying fixed increments to hue, saturation, and brightness in HSV space, with special handling for warm/cool hues and dark theme mixing.",
+      "steps": [
+        "1. Parse input color to HSV using FastColor",
+        "2. Generate 5 lighter colors (i = 5 down to 1):",
+        "   - Hue: if 60° ≤ h ≤ 240° (cool), subtract 2°×i; otherwise (warm), add 2°×i",
+        "   - Saturation: subtract 0.16×i, clamp between 0.06 and 1.0 (last step forced to max 0.1)",
+        "   - Value: add 0.05×i, clamp to [0, 1]",
+        "3. Add base color at index 5",
+        "4. Generate 4 darker colors (i = 1 to 4):",
+        "   - Hue: if 60° ≤ h ≤ 240°, add 2°×i; otherwise subtract 2°×i (opposite direction)",
+        "   - Saturation: add 0.05×i (except last step: add 0.16), clamp to [0.06, 1.0]",
+        "   - Value: subtract 0.15×i, clamp to [0, 1]",
+        "5. Dark theme variant: mix each color with background (#141414) using pre-configured amounts [15, 25, 30, 45, 65, 85, 90, 95, 97, 98]%"
+      ],
+      "key_formulas": {
+        "hue_step": "2° per step",
+        "saturation_step_light": "0.16",
+        "saturation_step_dark": "0.05 (except final: 0.16)",
+        "brightness_step_light": "0.05",
+        "brightness_step_dark": "0.15",
+        "hue_direction_rule": "Hue 60-240 (green-cyan-blue range) rotates hue downward for lighter, upward for darker. All other hues do the opposite.",
+        "saturation_clamp": "0.06 ≤ s ≤ 1.0, with first lighter step limited to 0.1",
+        "dark_theme_mix_amounts": "[15, 25, 30, 45, 65, 85, 90, 95, 97, 98] — each value is % of pattern color mixed into background"
+      }
+    },
+    "notable_techniques": [
+      "Directional hue rotation: recognizes that cooler hues need different rotation direction than warmer ones to stay visually harmonious",
+      "Asymmetric saturation treatment for light vs dark ends",
+      "Dark theme uses optical mixing against a dark background rather than direct HSV manipulation",
+      "Exactly 10 colors per palette (5 light + base + 4 dark), standardized for Ant Design's design system"
+    ]
+  },
+  {
+    "repo": "primer/prism",
+    "name": "Prism (GitHub)",
+    "description": "GitHub's color palette creation tool using HSLuv and bezier curve interpolation",
+    "core_file": "src/utils.ts (with src/easings.ts for bezier curves)",
+    "color_spaces": ["HSLuv (perceptually uniform)"],
+    "dependencies": ["hsluv", "color2k", "bezier-easing"],
+    "approach_classification": "Curve-based offset system over perceptually uniform HSLuv space with bezier easing",
+    "core_algorithm": {
+      "summary": "Colors are defined as (hue, saturation, lightness) triplets. Each scale has associated curves (named arrays of delta values) that modify each channel per index. Curves can be hand-edited or generated with bezier easing functions. The final color at each position is base + curve_offset.",
+      "steps": [
+        "1. Parse hex color to HSLuv: hsluv.hexToHsluv(hex) → [h, s, l] all rounded to 2 decimals",
+        "2. Each scale has a list of base colors and references to hue/saturation/lightness curves",
+        "3. To get the color at index i: color.hue + hueCurve[i], color.saturation + satCurve[i], color.lightness + lightCurve[i]",
+        "4. Convert back to hex via hsluv.hsluvToHex([h, s, l])",
+        "5. Curves are independently defined for each channel (hue 0-360, saturation 0-100, lightness 0-100)",
+        "6. Easing functions (linear, quadratic, cubic, quartic, quintic, sine, circular, exponential) each with in/out/inOut variants, defined as cubic bezier curves"
+      ],
+      "key_formulas": {
+        "color_computation": "hue_final = hue_base + curve_hue[i]; sat_final = sat_base + curve_sat[i]; l_final = l_base + curve_l[i]",
+        "bezier_easing_examples": {
+          "linear": "bezier(0.5, 0.5, 0.5, 0.5)",
+          "quadratic_inOut": "bezier(0.455, 0.03, 0.515, 0.955)",
+          "cubic_inOut": "bezier(0.645, 0.045, 0.355, 1)",
+          "sine_inOut": "bezier(0.445, 0.05, 0.55, 0.95)",
+          "circular_inOut": "bezier(0.785, 0.135, 0.15, 0.86)",
+          "exponential_inOut": "bezier(1, 0, 0, 1)"
+        },
+        "lerp": "a + (b - a) * t",
+        "contrast_score": "contrast < 3 → 'Fail', < 4.5 → 'AA+', < 7 → 'AA', ≥ 7 → 'AAA'"
+      }
+    },
+    "notable_techniques": [
+      "Uses HSLuv rather than HSL for perceptually uniform lightness — step size N in lightness means roughly the same perceived brightness change regardless of hue",
+      "Separation of concerns: base colors define the anchor points, curves define the distribution patterns — these are independently editable",
+      "Bezier easing functions give fine-grained control over curve shapes, enabling designers to craft precise color ramps",
+      "Three independent curve channels (hue/sat/lightness) can be mixed and matched across scales",
+      "GUI-focused tool with interactive curve editing"
+    ]
+  },
+  {
+    "repo": "SimeonGriggs/tints.dev",
+    "name": "tints.dev",
+    "description": "Tailwind CSS 11-color palette generator and API with tweakable HSL parameters",
+    "core_file": "app/lib/createSwatches.ts",
+    "color_spaces": ["HSL (linear mode)", "HSLuv (perceived mode)"],
+    "dependencies": ["chroma-js", "hsluv"],
+    "approach_classification": "Distance-based HSL parameter tweaks with linear interpolation anchors",
+    "core_algorithm": {
+      "summary": "From a single hex color, generates a 13-stop Tailwind palette. The hue and saturation shift proportionally to distance from the base stop, while lightness is determined by three anchor points (0, valueStop, 1000) with linear interpolation between them. Supports two modes: linear (raw HSL) and perceived (HSLuv).",
+      "steps": [
+        "1. Parse input hex to get base HSL values",
+        "2. Create hue scale: for each stop, tweak = abs(stopIndex - valueStopIndex) * h (user-tunable h parameter, default 0)",
+        "3. Create saturation scale: for each stop, tweak = (diff + 1) * s * (1 + diff/10), capped at 100",
+        "4. Create lightness distribution:",
+        "   - 3 anchors: stop 0 → lMax, stop valueStop → base lightness, stop 1000 → lMin",
+        "   - For any stop between anchors: linear interpolation ratio = (stop - leftAnchor.stop) / (rightAnchor.stop - leftAnchor.stop)",
+        "   - tweak = leftAnchor.tweak + (rightAnchor.tweak - leftAnchor.tweak) * ratio",
+        "5. For linear mode: assemble final color as hsl((baseH + hTweak) % 360, clamp(baseS*100 + sTweak, 0, 100), clamp(lTweak, 0, 100))",
+        "6. For perceived mode (HSLuv): assemble as hsluv_h = (hsluv_h + hTweak) % 360, hsluv_s = clamp(hsluv_s + sTweak, 0, 100), hsluv_l = clamp(lTweak, 0, 100)",
+        "7. The exact input color at valueStop is preserved unchanged"
+      ],
+      "key_formulas": {
+        "hue_tweak": "abs(stopIndex - valueStopIndex) * h",
+        "saturation_tweak": "min((|stopIndex - valueStopIndex| + 1) * s * (1 + |diff|/10), 100)",
+        "lightness_anchors": "[(0, lMax), (valueStop, baseLightness), (1000, lMin)]",
+        "lightness_interpolation": "leftAnchor.tweak + (rightAnchor.tweak - leftAnchor.tweak) * (stop - leftAnchor.stop) / (rightAnchor.stop - leftAnchor.stop)",
+        "stops": "[0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950, 1000]",
+        "default_config": "h=0, s=0, lMin=0, lMax=100, colorMode='perceived', valueStop=500"
+      }
+    },
+    "notable_techniques": [
+      "User-tunable 'h' (hue shift) and 's' (saturation shift) params allow adjusting palette character without changing the base color",
+      "Three-anchor lightness system provides precise control over the brightness range: lMax and lMin define the endpoints independently of base color brightness",
+      "Dual mode: 'linear' uses raw HSL (fast, simple), 'perceived' uses HSLuv (more natural-looking brightness ramps)",
+      "Saturation formula is non-linear: (diff+1)*s*(1+diff/10) — grows faster than linear as distance from base increases",
+      "Preserves the exact input hex at the designated valueStop, unlike many generators that modify the input",
+      "Supports API endpoints for programmatic palette generation"
+    ]
+  },
+  {
+    "repo": "meodai/poline",
+    "name": "Poline",
+    "description": "HSL color palette generator using 3D cartesian interpolation with per-axis easing functions",
+    "core_file": "src/index.ts",
+    "color_spaces": ["HSL (mapped to 3D cartesian x,y,z)"],
+    "dependencies": ["none (pure TypeScript)"],
+    "approach_classification": "3D cartesian color space mapping with multi-segment easing interpolation between anchor points",
+    "core_algorithm": {
+      "summary": "The novel insight: map HSL values to 3D cartesian coordinates where (x,y) encodes hue+lightness as a position on a color wheel (angle=hue, distance from center=lightness), and z encodes saturation. This creates a cylindrical color volume. Anchor colors become points in this 3D space. Palettes are generated by interpolating between anchor points along lines, with independent easing functions (position functions) applied to each of the 3 axes.",
+      "steps": [
+        "1. Anchor colors defined as HSL triplets [h(0-360), s(0-1), l(0-1)]",
+        "2. HSL → 3D Point (hslToPoint):",
+        "   - radians = h / (180/π)",
+        "   - dist = l * 0.5 (center=dark, edge=light; can be inverted)",
+        "   - x = 0.5 + dist * cos(radians)",
+        "   - y = 0.5 + dist * sin(radians)",
+        "   - z = s",
+        "3. 3D Point → HSL (pointToHSL):",
+        "   - radians = atan2(y - 0.5, x - 0.5)",
+        "   - deg = (360 + radians * 180/π) % 360",
+        "   - s = z",
+        "   - dist = sqrt((y-0.5)² + (x-0.5)²)",
+        "   - l = dist / 0.5",
+        "4. Anchors are paired into segments. For each pair (p1, p2), generate numPoints via vectorOnLine:",
+        "   - For each point i in 0..numPoints-1:",
+        "   - t = i / (numPoints - 1)",
+        "   - x = (1 - fx(t)) * p1[0] + fx(t) * p2[0]",
+        "   - y = (1 - fy(t)) * p1[1] + fy(t) * p2[1]",
+        "   - z = (1 - fz(t)) * p1[2] + fz(t) * p2[2]",
+        "   - Where fx, fy, fz are independent position functions (can be different per axis)",
+        "5. Even-indexed segments invert the easing direction, creating a serpentine flow"
+      ],
+      "key_formulas": {
+        "hsl_to_point": {
+          "radians": "hue / (180/π)",
+          "dist_from_center": "lightness * 0.5  [or (1-lightness) * 0.5 if inverted]",
+          "x": "0.5 + dist * cos(radians)",
+          "y": "0.5 + dist * sin(radians)",
+          "z": "saturation"
+        },
+        "point_to_hsl": {
+          "radians": "atan2(y - 0.5, x - 0.5)",
+          "hue": "(360 + radians * 180/π) % 360",
+          "saturation": "z",
+          "distance": "√((y - 0.5)² + (x - 0.5)²)",
+          "lightness": "distance / 0.5  [or 1 - distance/0.5 if inverted]"
+        },
+        "position_functions": {
+          "linear": "fx(t) = t",
+          "exponential": "fx(t) = t²  (reverse: 1-(1-t)²)",
+          "quadratic": "fx(t) = t³  (reverse: 1-(1-t)³)",
+          "cubic": "fx(t) = t⁴  (reverse: 1-(1-t)⁴)",
+          "quartic": "fx(t) = t⁵  (reverse: 1-(1-t)⁵)",
+          "sinusoidal": "fx(t) = sin(t*π/2)  (reverse: 1-sin((1-t)*π/2))",
+          "asinusoidal": "fx(t) = asin(t)/(π/2)  (reverse: 1-asin(1-t)/(π/2))",
+          "arc": "fx(t) = 1-√(1-t)  (reverse: 1-√(1-t²))",
+          "smoothStep": "fx(t) = t²*(3-2t)"
+        },
+        "hue_distance": "min(|h1 - h2|, 360 - |h1 - h2|) / 360",
+        "clamp_to_circle": "if dist > 0.5: project to edge via (cx + dx/dist*0.5, cy + dy/dist*0.5)"
+      }
+    },
+    "notable_techniques": [
+      "The core innovation: treating HSL as a 3D cartesian volume where (x,y) = polar position on a color disc, z = saturation. This makes geometric sense — hue is angular, lightness is radial, saturation is altitude.",
+      "Per-axis independent easing functions enable unprecedented control: you could have sinusoidal hue transitions, exponential saturation drops, and linear lightness ramps all in the same palette",
+      "Closed-loop mode connects the last anchor back to the first, enabling circular palette journeys",
+      "Inverted lightness mode swaps center=dark/edge=light to edge=dark/center=light",
+      "Clamp-to-circle ensures all interpolated points stay within the valid color disc radius",
+      "Serpentine auto-inversion: even-indexed segments reverse easing direction, creating smooth back-and-forth transitions",
+      "getColorAt(t) method allows continuous sampling along the entire multi-segment path as if it were one continuous curve",
+      "Approximate OKLCH and LCH CSS output via linear rescaling of HSL values",
+      "Zero dependencies — pure TypeScript implementation"
+    ]
+  },
+  {
+    "repo": "rvanwijnen/spectral.js",
+    "name": "spectral.js",
+    "description": "Physically-based color mixing using the Kubelka-Munk model of pigment interaction with spectral reflectance",
+    "core_file": "spectral.js",
+    "color_spaces": ["sRGB", "linear RGB", "XYZ", "OKLab", "OKLCh", "Spectral Reflectance (38 bands, 380-730nm)"],
+    "dependencies": ["none (pure JavaScript, UMD)"],
+    "approach_classification": "Spectral-domain Kubelka-Munk pigment mixing with full colorimetric pipeline",
+    "core_algorithm": {
+      "summary": "Instead of mixing in a perceptual or device color space, spectral.js converts colors to spectral reflectance curves (38 wavelength bands), mixes them using the Kubelka-Munk absorption/scattering physics model, and converts back through CIE XYZ → OKLab/OKLCh → linear RGB → sRGB. This produces physically realistic paint mixing behavior (e.g., blue+yellow actually makes green, not gray).",
+      "steps": [
+        "1. Input sRGB → linear RGB via gamma un-companding: if x > 0.04045: ((x+0.055)/1.055)^2.4, else: x/12.92",
+        "2. linear RGB → Spectral Reflectance (lRGB_to_R): Decompose into 7 base spectra (White, Cyan, Magenta, Yellow, Red, Green, Blue) using a subtractive color model decomposition of the RGB components. For each wavelength i: R[i] = w*W[i] + c*C[i] + m*M[i] + y*Y[i] + r*R[i] + g*G[i] + b*B[i]",
+        "3. Spectral domain mixing (mix function):",
+        "   - For each wavelength i (0-37):",
+        "   - Compute KS value for each pigment: KS(R) = (1 - R)² / (2 * R)",
+        "   - Compute weighted concentration: concentration = factor² * tintingStrength² * luminance",
+        "   - Weighted sum: ksMix = Σ(KS[i] * concentration)",
+        "   - Convert back to reflectance: R[i] = KM(ksMix / totalConcentration)",
+        "   - Where KM(KS) = 1 + KS - √(KS² + 2*KS)",
+        "4. Spectral → XYZ (R_to_XYZ): Matrix multiply reflectance (38 values) with CIE Color Matching Functions (3×38 matrix, D65 weighted)",
+        "5. XYZ → OKLab: Via LMS using cube root: lms = M_XYZtoLMS × XYZ, then cbrt each, then OKLab = M_LMStoLAB × lms",
+        "6. OKLab → OKLCh: C = √(a²+b²), h = atan2(b,a)*180/π (wrapped to 0-360)",
+        "7. Gamut mapping: Binary search on chroma in OKLCh to find the closest in-gamut color, using deltaEOK as the distance metric",
+        "8. Finally: OKLab → XYZ → linear RGB → sRGB (with companding)"
+      ],
+      "key_formulas": {
+        "kubelka_munk_KS": "KS(R) = (1 - R)² / (2 * R)",
+        "kubelka_munk_KM_inverse": "KM(KS) = 1 + KS - √(KS² + 2*KS)",
+        "mixing_weight": "concentration = factor² * tintingStrength² * luminance",
+        "mix_at_wavelength_i": "R[i] = KM( Σ(KS_i[pigment] * concentration[pigment]) / Σ(concentration[pigment]) )",
+        "gamma_uncompand": "x > 0.04045 → ((x+0.055)/1.055)^2.4, else x/12.92",
+        "gamma_compand": "x > 0.0031308 → 1.055·x^(1/2.4) - 0.055, else 12.92·x",
+        "rgb_to_xyz_matrix": "[[0.41239, 0.35758, 0.18048], [0.21264, 0.71517, 0.07219], [0.01933, 0.11919, 0.95053]]",
+        "xyz_to_lms_matrix": "[[0.81902, 0.36191, -0.12887], [0.03298, 0.92929, 0.03614], [0.04818, 0.26424, 0.63355]]",
+        "deltaEOK": "√((L1-L2)² + (a1-a2)² + (b1-b2)²)",
+        "palette": "for i in 0..size: mix(a with weight size-1-i, b with weight i)",
+        "gradient": "find bracketing colors around t, then mix with factor = (t - pos_a) / (pos_b - pos_a)"
+      }
+    },
+    "notable_techniques": [
+      "Uses actual physics: the Kubelka-Munk model from 1931 describes how light scatters and absorbs in pigmented layers — this is what real paint mixing software uses",
+      "Spectral domain mixing preserves metamerism — colors that look the same under one illuminant but different under another are handled correctly",
+      "Blue + Yellow actually produces Green because the spectral reflectances multiply in a physically correct way (subtractive mixing)",
+      "38 wavelength bands (roughly 10nm spacing from 380-730nm visible spectrum) provide sufficient spectral resolution",
+      "lRGB→R decomposition uses a clever 7-base-spectra subtractive model (W,C,M,Y,R,G,B) based on the Neugebauer model",
+      "Concentration weighting accounts for luminance (darker colors have less tinting power) and user-specified tinting strength",
+      "Gamut mapping uses binary search on OKLCh chroma with JND (just noticeable difference) threshold — preserves hue and lightness while finding closest valid chroma",
+      "Full colorimetric pipeline: spectral → XYZ → OKLab → OKLCh enables perceptually uniform operations alongside physical accuracy",
+      "Gradient function supports multi-stop interpolation for arbitrary color ramp generation",
+      "Includes a GLSL shader version (spectral.glsl) for GPU-accelerated spectral mixing",
+      "Zero dependencies, single-file UMD module"
+    ]
+  }
+]

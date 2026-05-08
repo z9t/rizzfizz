@@ -1,0 +1,103 @@
+meodai/poline: Esoteric Palette Generator Mico-Lib Interpolating HSL Color in cartesian space
+https://github.com/meodai/poline
+Esoteric Palette Generator Mico-Lib Interpolating HSL Color in cartesian space - meodai/poline
+
+rvanwijnen/spectral.js: Spectral.js is a paint like color mixing library utilizing the Kubelka-Munk theory.
+https://github.com/rvanwijnen/spectral.js
+Spectral.js is a paint like color mixing library utilizing the Kubelka-Munk theory. - rvanwijnen/spectral.js
+
+fengsp/color-thief-py: Grabs the dominant color or a representative color palette from an image. Uses Python and Pillow.
+https://github.com/fengsp/color-thief-py
+Grabs the dominant color or a representative color palette from an image. Uses Python and Pillow. - fengsp/color-thief-py
+
+ment-mx/Prism: Creates a beautiful artboard color palette with all your 'Document Colors' and their respective color label in a variety of formats.
+https://github.com/ment-mx/Prism
+Creates a beautiful artboard color palette with all your 'Document Colors' and their respective color label in a variety of formats. - ment-mx/Prism
+
+jxnblk/palx: :rainbow: Automatic UI Color Palette Generator
+https://github.com/jxnblk/palx
+Unable to access meta description
+
+jiffyclub/palettable: Color palettes for Python
+https://github.com/jiffyclub/palettable
+Unable to access meta description
+
+99designs/colorific: Automatic color palette detection
+https://github.com/99designs/colorific
+Unable to access meta description
+
+eigenmiao/Rickrack: Generate harmonious colors freely.
+https://github.com/eigenmiao/Rickrack
+Unable to access meta description
+
+ant-design/ant-design-colors: Color Palettes Calculator of Ant Design
+https://github.com/ant-design/ant-design-colors
+Unable to access meta description
+
+primer/prism: A tool for creating and maintaining cohesive, consistent, and accessible color palettes
+https://github.com/primer/prism
+Unable to access meta description
+
+mrousavy/Colorwaver: 🎨 An app to detect color palettes in the real world - powered by VisionCamera
+https://github.com/mrousavy/Colorwaver
+Unable to access meta description
+
+ozwaldorf/lutgen-rs: Blazingly fast interpolated LUT generator and applicator for arbitrary and popular color palettes.
+https://github.com/ozwaldorf/lutgen-rs
+Unable to access meta description
+
+bjango/Color-Creator: Photoshop, Sketch and Affinity Designer documents that use base colors to generate larger palettes.
+https://github.com/bjango/Color-Creator
+Unable to access meta description
+
+webkul/coolhue: Coolest Gradient Hues and Swatches
+https://github.com/webkul/coolhue
+Unable to access meta description
+
+DingMouRen/PaletteImageView: 懂得智能配色的ImageView,还能给自己设置多彩的阴影哦。(Understand the intelligent color matching ImageView, but also to set their own colorful shadow Oh!)
+https://github.com/DingMouRen/PaletteImageView
+Unable to access meta description
+
+SimeonGriggs/tints.dev: 11-color Palette Generator and API for Tailwind CSS
+https://github.com/SimeonGriggs/tints.dev
+Unable to access meta description
+
+Refactoring UI
+https://refactoringui.com/
+Unable to access meta description
+
+Tailwind CSS 11-color Palette Generator and API
+https://www.tints.dev/palette/v1:b2NlYW58MEVBNUU5fDQwMHxwfDB8MHwwfDEwMHxh
+Unable to access meta description
+
+henngelm/background-generator-javascript: Background color generator. Linear gradient CSS Selector code generator.
+https://github.com/henngelm/background-generator-javascript
+Unable to access meta description
+
+MichaelRendon/Background-Generator: Background Gradient Color Selector
+https://github.com/MichaelRendon/Background-Generator
+Unable to access meta description
+
+lokesh/color-thief: Grab the color palette from an image using just Javascript. Works in the browser and in Node.
+https://github.com/lokesh/color-thief
+Unable to access meta description
+
+Color Thief
+https://lokeshdhakar.com/projects/color-thief/
+Unable to access meta description
+
+Experience-Monks/nice-color-palettes: nice colour palettes as JSON
+https://github.com/Experience-Monks/nice-color-palettes
+Unable to access meta description
+
+jcrispinroundtree/ColorPaletteRandomizer: Generates monochromatic, analogous, complimentary and triadic color palettes.
+https://github.com/jcrispinroundtree/ColorPaletteRandomizer
+Unable to access meta description
+
+Korben-Coffman/Palette-Generator: Generates 2 Bright Complimentary Colors and 2 Darker Shades for each Complimentary Color
+https://github.com/Korben-Coffman/Palette-Generator
+Unable to access meta description
+
+brettalford/Color-Palette-Generator: A generator for color palettes, randomly creates colors or can create complimentary colors, opposing colors, and analogous colors
+https://github.com/brettalford/Color-Palette-Generator
+Unable to access meta description
