@@ -1,9 +1,12 @@
 import { basename, join, resolve } from "node:path";
 import { buildPaletteRun, cssVarsForPalette, normalizeHueFamily, normalizeRelationship } from "./color.js";
+import { buildBuildContract } from "./contract.js";
 import { aEyesVariantTokens, writeAgentBriefs } from "./exports.js";
 import { readText, writeJson, writeText } from "./io.js";
+import { buildRunManifest } from "./manifest.js";
 import { buildTechnologyContext, readWhifflerScan, runWhiffler, type TechnologyContext } from "./technology.js";
 import type { PaletteRun, RawReference } from "./types.js";
+import { buildVisualTokensRun } from "./visual.js";
 
 type ScrubOptions = {
   input: string;
@@ -36,6 +39,9 @@ export async function scrubDesignMarkdown(options: ScrubOptions): Promise<{
   });
   const technologyContext = await maybeBuildTechnologyContext(options);
   const dna = buildDesignDna(scrubbedText, paletteRun, rawReference);
+  const buildContract = buildBuildContract({ scrubbedText, paletteRun, rawReference, technologyContext });
+  const visualTokens = buildVisualTokensRun(paletteRun);
+  const runManifest = buildRunManifest({ outDir, paletteRun, technologyContext: Boolean(technologyContext) });
   const neutralMd = buildNeutralDesignMd(scrubbedText, paletteRun);
   const variationRun = {
     schema: "rizzfizz.design-md-variation-run.v1",
@@ -57,6 +63,8 @@ export async function scrubDesignMarkdown(options: ScrubOptions): Promise<{
 
   await writeJson(join(outDir, "raw-reference.json"), rawReference);
   await writeJson(join(outDir, "scrubbed-design-dna.json"), dna);
+  await writeJson(join(outDir, "build-contract.json"), buildContract);
+  await writeJson(join(outDir, "visual-tokens.json"), visualTokens);
   await writeText(join(outDir, "DESIGN-neutral.md"), neutralMd);
   await Promise.all(paletteRun.variants.map((variant) => (
     writeText(join(outDir, `DESIGN-${variant.id}.md`), buildVariantDesignMd(scrubbedText, variant))
@@ -65,8 +73,9 @@ export async function scrubDesignMarkdown(options: ScrubOptions): Promise<{
   await writeJson(join(outDir, "palette-run.json"), paletteRun);
   await writeText(join(outDir, "tokens.css"), cssVarsForPalette(paletteRun));
   await writeJson(join(outDir, "variants-palette.json"), aEyesVariantTokens(paletteRun));
+  await writeJson(join(outDir, "run-manifest.json"), runManifest);
   if (technologyContext) await writeJson(join(outDir, "technology-context.json"), technologyContext);
-  await writeAgentBriefs(join(outDir, "builder-briefs"), paletteRun, dna, basename(outDir), technologyContext);
+  await writeAgentBriefs(join(outDir, "builder-briefs"), paletteRun, dna, basename(outDir), technologyContext, buildContract);
 
   return { outDir, paletteRun };
 }

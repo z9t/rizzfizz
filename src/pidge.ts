@@ -108,6 +108,9 @@ async function writeHandoffPayload(
       palette_run: join(inputDir, "palette-run.json"),
       variants_palette: join(inputDir, "variants-palette.json"),
       scrubbed_design_dna: join(inputDir, "scrubbed-design-dna.json"),
+      build_contract: await exists(join(inputDir, "build-contract.json")) ? join(inputDir, "build-contract.json") : null,
+      visual_tokens: await exists(join(inputDir, "visual-tokens.json")) ? join(inputDir, "visual-tokens.json") : null,
+      run_manifest: await exists(join(inputDir, "run-manifest.json")) ? join(inputDir, "run-manifest.json") : null,
       technology_context: await exists(join(inputDir, "technology-context.json")) ? join(inputDir, "technology-context.json") : null,
       raw_reference_included: Boolean(options.includeRaw)
     },
@@ -141,6 +144,9 @@ async function writeHandoffPayload(
 
 async function collectAttachments(inputDir: string, variantIds: string[], includeRaw: boolean): Promise<string[]> {
   const candidates = [
+    join(inputDir, "run-manifest.json"),
+    join(inputDir, "build-contract.json"),
+    join(inputDir, "visual-tokens.json"),
     join(inputDir, "scrubbed-design-dna.json"),
     join(inputDir, "palette-run.json"),
     join(inputDir, "variants-palette.json"),

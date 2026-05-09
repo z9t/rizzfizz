@@ -1,6 +1,6 @@
 import { access } from "node:fs/promises";
 import { basename, join } from "node:path";
-import type { PaletteRun, PaletteVariant } from "./types.js";
+import type { BuildContract, BuildContractVariant, PaletteRun, PaletteVariant } from "./types.js";
 import { cssVarsForPalette } from "./color.js";
 import { readJson, writeJson, writeText } from "./io.js";
 import { paletteRunSchema } from "./schemas.js";
@@ -40,7 +40,11 @@ export async function exportAgentBriefs(inputDir: string, outDir: string): Promi
   const technologyContext = await exists(technologyContextPath)
     ? await readJson<TechnologyContext>(technologyContextPath)
     : undefined;
-  await writeAgentBriefs(outDir, run, dna, basename(inputDir), technologyContext);
+  const contractPath = join(inputDir, "build-contract.json");
+  const contract = await exists(contractPath)
+    ? await readJson<BuildContract>(contractPath)
+    : undefined;
+  await writeAgentBriefs(outDir, run, dna, basename(inputDir), technologyContext, contract);
 }
 
 export async function writeAgentBriefs(
@@ -48,10 +52,11 @@ export async function writeAgentBriefs(
   run: PaletteRun,
   dna: Record<string, unknown>,
   sourceLabel: string,
-  technologyContext?: TechnologyContext
+  technologyContext?: TechnologyContext,
+  contract?: BuildContract
 ): Promise<void> {
   await Promise.all(run.variants.map((variant) => {
-    const content = agentBriefMarkdown(variant, dna, sourceLabel, technologyContext);
+    const content = agentBriefMarkdown(variant, dna, sourceLabel, technologyContext, contract);
     return writeText(join(outDir, `${variant.id}.md`), content);
   }));
 }
@@ -60,12 +65,16 @@ export function agentBriefMarkdown(
   variant: PaletteVariant,
   dna: Record<string, unknown>,
   sourceLabel: string,
-  technologyContext?: TechnologyContext
+  technologyContext?: TechnologyContext,
+  contract?: BuildContract
 ): string {
   const technology = technologyDirectionForVariant(variant);
+  const contractVariant = contract?.variants.find((item) => item.id === variant.id);
   return `# ${variant.name} Builder Brief
 
 Build the actual usable website experience described by this design direction. Do not create a generic landing page or a marketing-only wrapper around placeholder content.
+
+${contract ? contractMarkdown(contract, contractVariant) : fallbackDnaMarkdown(dna)}
 
 ## Design Direction
 
@@ -75,6 +84,7 @@ Build the actual usable website experience described by this design direction. D
 - typography: use a premium role-based type system; pair a strong heading face with a highly readable body face without copying proprietary source font identity
 - layout: preserve the abstract hierarchy and density from the design DNA; avoid source-specific brand layouts or distinctive copied phrasing
 - motion: use restrained motion that clarifies hierarchy; respect \`prefers-reduced-motion\`
+- contract: use \`build-contract.json\` as the source-safe implementation contract when present
 
 ## Palette Tokens
 
@@ -102,16 +112,6 @@ ${JSON.stringify({
 \`\`\`
 ` : ""}
 
-## Design DNA Summary
-
-\`\`\`json
-${JSON.stringify({
-  design_system: dna.design_system,
-  design_style: dna.design_style,
-  visual_effects: dna.visual_effects
-}, null, 2)}
-\`\`\`
-
 ## Quality Bar
 
 - Semantic HTML and accessible controls.
@@ -120,6 +120,67 @@ ${JSON.stringify({
 - Use icons for clear tool/button actions when appropriate.
 - Verify desktop and roughly 390px mobile with Playwright screenshots before finishing.
 - Record visual inspection findings before marking the build complete.
+`;
+}
+
+function contractMarkdown(contract: BuildContract, variant?: BuildContractVariant): string {
+  return `## Implementation Contract
+
+- site type: ${contract.intent.site_type}
+- primary job: ${contract.intent.primary_job}
+- audience: ${contract.intent.audience}
+- content posture: ${contract.intent.content_posture}
+
+## Layout Contract
+
+- first viewport: ${contract.layout.first_viewport}
+- navigation: ${contract.layout.navigation}
+
+${contract.layout.regions.map((region) => `### ${region.id}
+
+- purpose: ${region.purpose}
+- density: ${region.density}
+- notes: ${region.notes.join(" ")}
+`).join("\n")}
+## Component Contract
+
+${contract.components.required.map((component) => `- ${component.name}: ${component.purpose} States: ${component.states.join(", ")}. Constraints: ${component.constraints.join(" ")}`).join("\n")}
+
+Optional: ${contract.components.optional.join("; ")}
+
+## Motion Contract
+
+- level: ${contract.motion.level}
+- allowed techniques: ${contract.motion.allowed_techniques.join(", ")}
+- reduced motion: ${contract.motion.reduced_motion}
+
+${contract.motion.patterns.map((pattern) => `- ${pattern.name}: ${pattern.trigger}; ${pattern.duration_ms[0]}-${pattern.duration_ms[1]}ms; ${pattern.easing}; ${pattern.constraints.join(" ")}`).join("\n")}
+
+## Visual Rules
+
+${(variant?.visual_rules || []).map((rule) => `- ${rule}`).join("\n")}
+
+## Visual QA
+
+Screenshots: ${contract.visual_qa.screenshots.join("; ")}
+
+${contract.visual_qa.checks.map((check) => `- ${check}`).join("\n")}
+
+Fail if:
+${contract.visual_qa.fail_if.map((failure) => `- ${failure}`).join("\n")}
+`;
+}
+
+function fallbackDnaMarkdown(dna: Record<string, unknown>): string {
+  return `## Design DNA Summary
+
+\`\`\`json
+${JSON.stringify({
+  design_system: dna.design_system,
+  design_style: dna.design_style,
+  visual_effects: dna.visual_effects
+}, null, 2)}
+\`\`\`
 `;
 }
 

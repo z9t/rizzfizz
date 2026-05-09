@@ -30,15 +30,52 @@ test("scrub-md writes private and builder-facing artifacts without source identi
     await execFileAsync("node", [cli, "scrub-md", "--input", fixture, "--variants", "2", "--out", dir]);
     const raw = JSON.parse(await readFile(join(dir, "raw-reference.json"), "utf8"));
     const dna = await readFile(join(dir, "scrubbed-design-dna.json"), "utf8");
+    const contract = JSON.parse(await readFile(join(dir, "build-contract.json"), "utf8"));
+    const visualTokens = JSON.parse(await readFile(join(dir, "visual-tokens.json"), "utf8"));
+    const manifest = JSON.parse(await readFile(join(dir, "run-manifest.json"), "utf8"));
+    const contractText = JSON.stringify(contract);
     const brief = await readFile(join(dir, "builder-briefs", "variant-1.md"), "utf8");
     const variants = JSON.parse(await readFile(join(dir, "variants-palette.json"), "utf8"));
 
     assert.equal(raw.raw_text.includes("https://acme.example.com/aurora"), true);
     assert.equal(dna.includes("https://acme.example.com/aurora"), false);
+    assert.equal(contract.schema, "rizzfizz.build-contract.v1");
+    assert.equal(contract.source_safe, true);
+    assert.equal(contractText.includes("https://acme.example.com/aurora"), false);
+    assert.equal(contractText.includes("Acme"), false);
+    assert.equal(contractText.includes("recreate"), false);
+    assert.ok(contract.intent.primary_job);
+    assert.ok(contract.layout.regions.length >= 3);
+    assert.ok(contract.motion.patterns.length >= 3);
+    assert.ok(contract.visual_qa.fail_if.length >= 3);
+    assert.equal(visualTokens.schema, "rizzfizz.visual-tokens.v1");
+    assert.equal(visualTokens.variants.length, 2);
+    assert.ok(visualTokens.variants[0].actions.focus_ring);
+    assert.ok(visualTokens.variants[0].data_viz.categorical.length >= 6);
+    assert.equal(manifest.schema, "rizzfizz.run-manifest.v1");
+    assert.match(manifest.recommended_start, /build-contract\.json$/);
+    assert.match(brief, /Implementation Contract/);
+    assert.match(brief, /Motion Contract/);
+    assert.match(brief, /Visual QA/);
     assert.equal(brief.includes("Acme"), false);
     assert.equal(brief.includes("recreate"), false);
     assert.equal(variants.variants.length, 2);
     assert.ok(variants.variants[0].palette_tokens.paper);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("inspect command prints a compact run summary", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "rizzfizz-test-"));
+  try {
+    await execFileAsync("node", [cli, "scrub-md", "--input", fixture, "--variants", "2", "--out", dir]);
+    const { stdout } = await execFileAsync("node", [cli, "inspect", "--input", dir]);
+    assert.match(stdout, /RizzFizz run:/);
+    assert.match(stdout, /Recommended start:/);
+    assert.match(stdout, /Site type:/);
+    assert.match(stdout, /Visual token variants: 2/);
+    assert.match(stdout, /Motion level:/);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -59,6 +96,8 @@ test("export commands write a-eyes tokens, CSS vars, and agent briefs", async ()
     assert.equal(aeyes.schema, "rizzfizz.a-eyes-variant-tokens.v1");
     assert.match(css, /--paper:/);
     assert.match(brief, /Quality Bar/);
+    assert.match(brief, /Implementation Contract/);
+    assert.match(brief, /Component Contract/);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -111,6 +150,9 @@ test("handoff writes a Pidge payload in dry-run mode", async () => {
     assert.equal(payload.schema, "rizzfizz.pidge-handoff.v1");
     assert.equal(payload.variants.length, 1);
     assert.equal(payload.variants[0].id, "variant-1");
+    assert.match(payload.source.build_contract, /build-contract\.json$/);
+    assert.match(payload.source.visual_tokens, /visual-tokens\.json$/);
+    assert.match(payload.source.run_manifest, /run-manifest\.json$/);
     assert.equal(payload.source.raw_reference_included, false);
   } finally {
     await rm(dir, { recursive: true, force: true });

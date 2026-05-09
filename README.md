@@ -28,6 +28,7 @@ rizzfizz export --format agent-brief --input ./runs/example --out ./runs/example
 rizzfizz export --format css-vars --input ./palette-run.json --out ./tokens.css
 rizzfizz tech-scan --url https://example.com --out ./technology-context.json
 rizzfizz tech-scan --input ./whiffler-scan.json --out ./technology-context.json
+rizzfizz inspect --input ./runs/example
 rizzfizz handoff --input ./runs/example --to gemma --variant variant-1 --expects-response
 ```
 
@@ -37,6 +38,9 @@ rizzfizz handoff --input ./runs/example --to gemma --variant variant-1 --expects
 
 - `raw-reference.json`: private source archive with raw text, URLs, colors, font hints, and identity terms.
 - `scrubbed-design-dna.json`: source-safe design system, design style, and visual effects guidance.
+- `build-contract.json`: source-safe implementation contract for agents, including page intent, layout regions, components, motion rules, visual QA, and per-variant visual rules.
+- `visual-tokens.json`: expanded semantic tokens for surfaces, text, actions, status colors, data visualization, and effects.
+- `run-manifest.json`: compact source-safe entrypoint that points humans and agents to the generated artifacts.
 - `DESIGN-neutral.md` and `DESIGN-variant-*.md`: source-safe design Markdown files.
 - `palette-run.json`: OKLCH-generated variants with WCAG contrast checks.
 - `tokens.css`: CSS custom properties for the first palette variant.
@@ -117,6 +121,9 @@ rizzfizz handoff --input ./runs/example --to gemma --variant all --dry-run
 Default attachments are source-safe:
 
 - `scrubbed-design-dna.json`
+- `build-contract.json`
+- `visual-tokens.json`
+- `run-manifest.json`
 - `palette-run.json`
 - `variants-palette.json`
 - `tokens.css`

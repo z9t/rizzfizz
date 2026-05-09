@@ -4,6 +4,7 @@ import { formatCommand, sendPidgeHandoff } from "./pidge.js";
 import { buildPaletteRun, cssVarsForPalette, normalizeHueFamily, normalizeRelationship, parseHexToOklch } from "./color.js";
 import { exportAEyesTokens, exportAgentBriefs, exportCssVars } from "./exports.js";
 import { writeJson, writeText } from "./io.js";
+import { inspectRun } from "./manifest.js";
 import { scrubDesignMarkdown } from "./scrub.js";
 import { buildTechnologyContext, readWhifflerScan, runWhiffler } from "./technology.js";
 
@@ -101,6 +102,13 @@ program.command("handoff")
     } else {
       console.log(result.stdout);
     }
+  });
+
+program.command("inspect")
+  .description("Print a compact source-safe summary of a RizzFizz run.")
+  .requiredOption("--input <dir>", "scrub-md run directory")
+  .action(async (options) => {
+    process.stdout.write(`${await inspectRun(resolve(options.input))}\n`);
   });
 
 program.command("palette")

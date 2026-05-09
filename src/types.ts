@@ -66,3 +66,152 @@ export type RawReference = {
   };
   provenance: Record<string, unknown>;
 };
+
+export type PageIntent = {
+  site_type: string;
+  primary_job: string;
+  secondary_jobs: string[];
+  audience: string;
+  content_posture: string;
+};
+
+export type LayoutContract = {
+  first_viewport: string;
+  navigation: string;
+  regions: Array<{
+    id: string;
+    purpose: string;
+    density: string;
+    notes: string[];
+  }>;
+  responsive_rules: string[];
+};
+
+export type ComponentContract = {
+  required: Array<{
+    name: string;
+    purpose: string;
+    states: string[];
+    constraints: string[];
+  }>;
+  optional: string[];
+};
+
+export type MotionContract = {
+  level: "none" | "subtle" | "expressive" | "immersive";
+  allowed_techniques: string[];
+  patterns: Array<{
+    name: string;
+    trigger: string;
+    duration_ms: [number, number];
+    easing: string;
+    constraints: string[];
+  }>;
+  reduced_motion: string;
+  performance_budget: string[];
+};
+
+export type VisualQaContract = {
+  screenshots: string[];
+  checks: string[];
+  fail_if: string[];
+};
+
+export type BuildContractVariant = {
+  id: string;
+  name: string;
+  palette_tokens: PaletteTokens;
+  palette_relationship: PaletteRelationship;
+  palette_usage: string;
+  technology_direction: Record<string, unknown>;
+  visual_rules: string[];
+};
+
+export type BuildContract = {
+  schema: "rizzfizz.build-contract.v1";
+  created_at: string;
+  source_safe: true;
+  source_reference_ids: string[];
+  entrypoint: string;
+  intent: PageIntent;
+  layout: LayoutContract;
+  components: ComponentContract;
+  motion: MotionContract;
+  visual_qa: VisualQaContract;
+  avoid: string[];
+  variants: BuildContractVariant[];
+};
+
+export type VisualTokensVariant = {
+  id: string;
+  surfaces: {
+    canvas: string;
+    surface: string;
+    surface_raised: string;
+    surface_sunken: string;
+    overlay: string;
+  };
+  text: {
+    text_primary: string;
+    text_secondary: string;
+    text_inverse: string;
+  };
+  actions: {
+    action: string;
+    action_hover: string;
+    action_pressed: string;
+    focus_ring: string;
+  };
+  status: {
+    success: string;
+    warning: string;
+    danger: string;
+    info: string;
+  };
+  data_viz: {
+    categorical: string[];
+    sequential: string[];
+    neutral_grid: string;
+  };
+  effects: {
+    shadow_color: string;
+    glow_color: string;
+    gradient_from: string;
+    gradient_to: string;
+  };
+  usage_rules: string[];
+  checks: ContrastCheck[];
+};
+
+export type VisualTokensRun = {
+  schema: "rizzfizz.visual-tokens.v1";
+  created_at: string;
+  source_palette_run: string;
+  variants: VisualTokensVariant[];
+};
+
+export type RunManifest = {
+  schema: "rizzfizz.run-manifest.v1";
+  created_at: string;
+  source_safe_entrypoints: {
+    build_contract: string;
+    visual_tokens: string;
+    palette_run: string;
+    variants_palette: string;
+    tokens_css: string;
+    builder_briefs: string;
+  };
+  private_artifacts: {
+    raw_reference: string;
+  };
+  optional_artifacts: {
+    technology_context: string | null;
+  };
+  recommended_start: string;
+  variants: Array<{
+    id: string;
+    name: string;
+    builder_brief: string;
+    design_md: string;
+  }>;
+};
