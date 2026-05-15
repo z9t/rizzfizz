@@ -1,0 +1,21 @@
+name = "rizzfizz-ai-gateway"
+main = "worker.js"
+compatibility_date = "2025-05-01"
+
+# Replace with the hostname you want the Worker to serve from.
+# The zone must already be on your Cloudflare account.
+routes = [
+  { pattern = "ai.yourdomain.com/*", custom_domain = true },
+]
+
+[vars]
+# Account id: dashboard right sidebar on any domain, or `wrangler whoami`.
+CF_ACCOUNT_ID = "REPLACE_WITH_ACCOUNT_ID"
+
+# Name of the AI Gateway you create (dashboard or create-gateway.sh).
+CF_GATEWAY = "rizzfizz-gw"
+
+# Secrets — set with `wrangler secret put <NAME>`:
+#   ALLOWED_KEYS   comma-separated bearer keys you've issued to callers
+#   OPENAI_KEY     your real upstream OpenAI key
+#   (one secret per backend you enable in worker.js)
