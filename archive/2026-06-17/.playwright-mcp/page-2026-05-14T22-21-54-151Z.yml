@@ -1,0 +1,36 @@
+- generic [active]:
+  - generic:
+    - generic:
+      - paragraph:
+        - generic:
+          - generic: Shot
+          - generic: "on"
+          - generic: iPhone
+      - paragraph:
+        - generic:
+          - generic: in
+          - generic: Black
+          - generic: "&"
+          - generic: White
+  - generic [ref=e1]:
+    - generic [ref=e2]:
+      - paragraph [ref=e8] [cursor=pointer]: Shot on iPhone
+      - generic [ref=e9]:
+        - generic [ref=e10] [cursor=pointer]:
+          - img [ref=e11]
+          - paragraph [ref=e14]: Flow
+        - generic [ref=e15] [cursor=pointer]:
+          - img [ref=e16]
+          - paragraph [ref=e21]: Grid
+        - generic [ref=e22] [cursor=pointer]:
+          - img [ref=e23]
+          - paragraph [ref=e25]: Map
+    - generic:
+      - generic [ref=e130]:
+        - img [ref=e132] [cursor=pointer]
+        - img [ref=e135] [cursor=pointer]
+        - img [ref=e138] [cursor=pointer]
+      - link [ref=e143] [cursor=pointer]:
+        - /url: https://www.instagram.com/lorenzobocchidesigner
+        - img [ref=e145]
+  - alert [ref=e149]

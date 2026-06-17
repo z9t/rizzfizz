@@ -1,6 +1,6 @@
 {
   "name": "rizzfizz",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CLI-first design intelligence utility for scrubbed website-builder briefs and OKLCH palette tokens.",
   "type": "module",
   "bin": {
@@ -14,7 +14,9 @@
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && node --test",
-    "smoke": "npm run build && node bin/cli.js palette --relationship dark-sparse-accent --hue blue --variants 4 --out /tmp/rizzfizz-smoke-palette.json && node bin/cli.js export --format a-eyes-variant-tokens --input /tmp/rizzfizz-smoke-palette.json --out /tmp/rizzfizz-smoke-aeyes.json"
+    "sample:a-eyes-intake": "npm run build && node scripts/run-aeyes-intake-sample.mjs",
+    "sample:briefweaver-import": "npm run build && node scripts/run-briefweaver-import-sample.mjs",
+    "smoke": "npm run build && node bin/cli.js palette --relationship dark-sparse-accent --hue blue --variants 4 --out /tmp/rizzfizz-smoke-palette.json && node bin/cli.js export --format a-eyes-variant-tokens --input /tmp/rizzfizz-smoke-palette.json --out /tmp/rizzfizz-smoke-aeyes.json && node scripts/run-aeyes-intake-sample.mjs --out /tmp/rizzfizz-aeyes-intake-sample"
   },
   "dependencies": {
     "commander": "^14.0.2",

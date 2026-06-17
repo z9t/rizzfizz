@@ -1,0 +1,274 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]: We use cookies to enhance your experience.
+    - generic [ref=e4]:
+      - button "Deny" [ref=e5] [cursor=pointer]
+      - button "Allow" [ref=e6] [cursor=pointer]
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - button "Toggle navigation menu" [ref=e10] [cursor=pointer]
+      - link "Logo" [ref=e17] [cursor=pointer]:
+        - /url: /
+        - img "Logo" [ref=e18]
+      - link "Send us an email" [ref=e20] [cursor=pointer]:
+        - /url: mailto:firstcontact@fromanother.love
+        - generic [ref=e23]:
+          - generic [ref=e24]: Let’s chat
+          - generic [ref=e25]: Let’s chat
+    - main [ref=e26]:
+      - generic [ref=e27]:
+        - generic [ref=e30]:
+          - heading "We are anArtist — ledCreative AGENCY STUDIO COLLECTIVE" [level=1] [ref=e31]:
+            - generic [ref=e33]:
+              - generic [ref=e34]: We
+              - generic [ref=e35]: are
+              - generic [ref=e36]: an
+            - generic [ref=e38]:
+              - generic [ref=e39]: Artist
+              - generic [ref=e40]: —
+              - generic [ref=e41]: led
+            - generic [ref=e45]: Creative
+            - generic [ref=e48]:
+              - generic [ref=e50]: AGENCY
+              - generic [ref=e52]: STUDIO
+              - generic [ref=e54]: COLLECTIVE
+          - navigation "Available regions" [ref=e55]
+        - generic [ref=e57]:
+          - generic [ref=e62]:
+            - generic [ref=e63]: "1"
+            - generic [ref=e65]: About
+          - generic [ref=e70]:
+            - generic [ref=e72]:
+              - generic [ref=e73]: "2"
+              - generic [ref=e75]: What We Do
+            - generic [ref=e76]:
+              - list [ref=e81]:
+                - listitem [ref=e82]: Art Direction
+                - listitem [ref=e83]: Design Concept
+                - listitem [ref=e84]: Commercials & CGI
+                - listitem [ref=e85]: Brand Identity
+              - list [ref=e90]:
+                - listitem [ref=e91]: Web Experience
+                - listitem [ref=e92]: Social Media
+                - listitem [ref=e93]: Asset Production
+              - list [ref=e98]:
+                - listitem [ref=e99]: Immersive Event
+                - listitem [ref=e100]: Interactive Art
+                - listitem [ref=e101]: OOH/Billboard
+                - listitem [ref=e102]: Print Ads
+          - generic [ref=e104]:
+            - generic:
+              - generic:
+                - generic:
+                  - generic: "3"
+                  - generic: Featured work
+            - generic:
+              - generic:
+                - generic:
+                  - heading [level=3]:
+                    - generic [ref=e105]: Powered to Play All Day
+                  - generic [ref=e106]:
+                    - generic [ref=e107]: Creative Direction
+                    - generic [ref=e108]: Art Direction
+                    - generic [ref=e109]: CGI Production
+                    - generic [ref=e110]: Production
+                - navigation:
+                  - button [disabled]:
+                    - img
+                  - link:
+                    - /url: /work
+                    - text: View all projects
+                  - button:
+                    - img
+            - generic [ref=e111]:
+              - generic [ref=e114]:
+                - button "Go to project 1" [ref=e116] [cursor=pointer]:
+                  - img "Powered to Play All Day" [ref=e117]
+                - button "Go to project 2" [ref=e120] [cursor=pointer]:
+                  - img "The Eternal Horse x Marina IFC" [ref=e121]
+                - button "Go to project 3" [ref=e124] [cursor=pointer]:
+                  - img "Year of the Rabbit" [ref=e125]
+                - button "Go to project 4" [ref=e128] [cursor=pointer]:
+                  - img "Louis Vuitton Series" [ref=e129]
+                - button "Go to project 5" [ref=e132] [cursor=pointer]:
+                  - img "Oriens Lumina Walks" [ref=e133]
+                - button "Go to project 6" [ref=e136] [cursor=pointer]:
+                  - img "Perfection at Play" [ref=e137]
+              - generic [ref=e141]:
+                - link "Powered to Play All Day" [ref=e143] [cursor=pointer]:
+                  - /url: /work/oneplus-powered-to-play-all-day
+                  - img "Powered to Play All Day"
+                - link "The Eternal Horse x Marina IFC" [ref=e145] [cursor=pointer]:
+                  - /url: /work/the-eternal-horse-x-marina-ifc
+                  - img "The Eternal Horse x Marina IFC"
+                - link "Year of the Rabbit" [ref=e147] [cursor=pointer]:
+                  - /url: /work/year-of-the-rabbit-la-mer
+                  - img "Year of the Rabbit"
+                - link "Louis Vuitton Series" [ref=e149] [cursor=pointer]:
+                  - /url: /work/louis-vuitton-series
+                  - img "Louis Vuitton Series"
+                - link "Oriens Lumina Walks" [ref=e151] [cursor=pointer]:
+                  - /url: /work/moment-factory
+                  - img "Oriens Lumina Walks"
+                - link "Perfection at Play" [ref=e153] [cursor=pointer]:
+                  - /url: /work/oneplus-buds-pro-3
+                  - img "Perfection at Play"
+              - generic [ref=e154]:
+                - generic [ref=e155]:
+                  - heading "Powered to Play All Day" [level=3] [ref=e156]:
+                    - generic [ref=e158]: Powered to Play All Day
+                  - generic [ref=e160]:
+                    - generic [ref=e161]: Creative Direction
+                    - generic [ref=e162]: Art Direction
+                    - generic [ref=e163]: CGI Production
+                    - generic [ref=e164]: Production
+                - navigation "Showcase carousel" [ref=e165]:
+                  - button "Previous project" [disabled] [ref=e166]:
+                    - img [ref=e167] [cursor=pointer]
+                  - link "View all projects" [ref=e170] [cursor=pointer]:
+                    - /url: /work
+                  - button "Next project" [ref=e171] [cursor=pointer]:
+                    - img [ref=e172]
+          - generic [ref=e178]:
+            - generic [ref=e180]:
+              - generic [ref=e181]: "4"
+              - generic [ref=e183]: Our team
+            - generic [ref=e184]:
+              - generic [ref=e185]:
+                - generic [ref=e187]:
+                  - img "Anonymous" [ref=e189]
+                  - img "Anonymous" [ref=e191]
+                  - img "Anonymous" [ref=e193]
+                  - img "Anonymous" [ref=e195]
+                - paragraph [ref=e199]: What started in China as a creative partnership which became the foundation of everything we've built. The curiosity never stops there.
+              - generic [ref=e200]:
+                - button "Previous member" [disabled] [ref=e201] [cursor=pointer]:
+                  - img [ref=e202]
+                - generic [ref=e205]:
+                  - button "Go to member 1" [ref=e206] [cursor=pointer]
+                  - button "Go to member 2" [ref=e207] [cursor=pointer]
+                  - button "Go to member 3" [ref=e208] [cursor=pointer]
+                  - button "Go to member 4" [ref=e209] [cursor=pointer]
+                - button "Next member" [ref=e210] [cursor=pointer]:
+                  - img [ref=e211]
+          - generic [ref=e219]:
+            - generic [ref=e220]: "5"
+            - generic [ref=e222]: They trust us
+          - generic [ref=e249]:
+            - generic [ref=e252]:
+              - generic [ref=e253]: "6"
+              - generic [ref=e255]: Awards
+            - generic [ref=e257]:
+              - generic [ref=e258]:
+                - img "Untitled"
+              - generic [ref=e259]:
+                - img "Untitled"
+              - generic [ref=e260]:
+                - img "Untitled"
+              - generic [ref=e261]:
+                - img "Untitled"
+          - generic [ref=e266]:
+            - generic [ref=e269]:
+              - generic [ref=e270]: "7"
+              - generic [ref=e272]: We are on
+            - generic [ref=e273]:
+              - link "L’officiel L’officiel" [ref=e274] [cursor=pointer]:
+                - /url: https://www.lofficielvietnam.com/pop-music-film/doi-thoai-cung-vicki-va-robin-nhung-ket-noi-cam-xuc-trong-ky-nguyen-so
+                - img "L’officiel" [ref=e276]
+                - heading "L’officiel" [level=4] [ref=e277]
+              - link "TED Talk TED Talk":
+                - /url: https://www.ted.com/talks/robin_mahieux_challenge_conformity
+                - generic:
+                  - img "TED Talk"
+                - heading "TED Talk" [level=4]
+              - link "Biti’s Biti’s":
+                - /url: https://tiepbuoctien.vn/en/exhibition/research-innovation
+                - generic:
+                  - img "Biti’s"
+                - heading "Biti’s" [level=4]
+              - link "Nowness Nowness":
+                - /url: https://www.nowness.asia/topic/robin-mahieux/now-lico-kehua-li
+                - generic:
+                  - img "Nowness"
+                - heading "Nowness" [level=4]
+              - link "MixMag MixMag":
+                - /url: https://mixmag.asia/read/mt-goc-nhin-khac-v-sai-gon-ng-i-vi-saigon-souls-music-and-video
+                - generic:
+                  - img "MixMag"
+                - heading "MixMag" [level=4]
+              - link "3D for Designers 3D for Designers":
+                - /url: https://www.3dfordesigners.com/blog/vicki-dang
+                - generic:
+                  - img "3D for Designers"
+                - heading "3D for Designers" [level=4]
+              - link "Girlsclub Asia Girlsclub Asia":
+                - /url: https://girlsclub.asia/meet-the-artist/vicki-hanh-dang/
+                - generic:
+                  - img "Girlsclub Asia"
+                - heading "Girlsclub Asia" [level=4]
+              - link "TEDX Salon TEDX Salon":
+                - /url: https://www.ted.com/tedx/events/36110
+                - generic:
+                  - img "TEDX Salon"
+                - heading "TEDX Salon" [level=4]
+        - generic [ref=e280]:
+          - generic [ref=e281]:
+            - generic [ref=e282]:
+              - generic [ref=e283]:
+                - paragraph [ref=e284]: Let’s
+                - paragraph [ref=e285]: create
+                - paragraph [ref=e286]:
+                  - generic [ref=e287]: something
+                  - generic [ref=e288]: impact
+                  - generic [ref=e289]: stories
+                  - generic [ref=e290]: future
+                - paragraph [ref=e291]: together
+              - generic [ref=e292]:
+                - paragraph [ref=e293]: Contact us
+                - link "firstcontact@fromanother.love firstcontact@fromanother.love" [ref=e294] [cursor=pointer]:
+                  - /url: mailto:firstcontact@fromanother.love
+                  - generic [ref=e296]:
+                    - generic [ref=e297]: firstcontact@fromanother.love
+                    - generic [ref=e298]: firstcontact@fromanother.love
+            - generic [ref=e299]:
+              - generic [ref=e304]:
+                - paragraph [ref=e305]: Vietnam
+                - paragraph [ref=e307]: Midtown, Phu My Hung Ho Chi Minh city
+                - paragraph [ref=e308]: +84 91 9922034
+              - generic [ref=e313]:
+                - paragraph [ref=e314]: China
+                - paragraph [ref=e316]: 193 Lockart Road, Hong Kong
+                - paragraph [ref=e317]: +86 186 16222144
+              - generic [ref=e322]:
+                - paragraph [ref=e323]: France
+                - paragraph [ref=e325]: 64-66 Rue des Archives, 75003 Paris, France
+                - paragraph [ref=e326]: +33 56 3264235
+          - generic [ref=e327]:
+            - generic [ref=e329]:
+              - paragraph [ref=e330]: Follow us
+              - list [ref=e331]:
+                - listitem [ref=e332]:
+                  - link "Facebook Facebook" [ref=e333] [cursor=pointer]:
+                    - /url: https://www.facebook.com/fromanotherlove
+                    - generic [ref=e335]:
+                      - generic [ref=e336]: Facebook
+                      - generic [ref=e337]: Facebook
+                - listitem [ref=e338]:
+                  - link "LinkedIn LinkedIn" [ref=e339] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/company/fromanotherlove/
+                    - generic [ref=e341]:
+                      - generic [ref=e342]: LinkedIn
+                      - generic [ref=e343]: LinkedIn
+                - listitem [ref=e344]:
+                  - link "Instagram Instagram" [ref=e345] [cursor=pointer]:
+                    - /url: https://www.instagram.com/fromanother.love/
+                    - generic [ref=e347]:
+                      - generic [ref=e348]: Instagram
+                      - generic [ref=e349]: Instagram
+            - paragraph [ref=e351]: © 2024 All rights reserved. fromanother.
+  - generic [ref=e352]:
+    - paragraph [ref=e353]: Hello, welcome to fromanother!
+    - generic:
+      - generic:
+        - paragraph: 0%
+  - alert [ref=e354]

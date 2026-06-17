@@ -1,0 +1,295 @@
+- generic [active]:
+  - main:
+    - generic:
+      - link "Go to homepage" [ref=e1] [cursor=pointer]:
+        - /url: /
+        - img [ref=e3]
+      - navigation:
+        - list:
+          - listitem:
+            - link "Work" [ref=e5] [cursor=pointer]:
+              - /url: /work
+              - generic:
+                - generic: Work
+                - generic: Work
+          - listitem:
+            - link "Applied AI" [ref=e6] [cursor=pointer]:
+              - /url: /ai
+              - generic:
+                - generic: Applied AI
+                - generic: Applied AI
+          - listitem:
+            - link "About" [ref=e7] [cursor=pointer]:
+              - /url: /about
+              - generic:
+                - generic: About
+                - generic: About
+          - listitem:
+            - link "Services" [ref=e8] [cursor=pointer]:
+              - /url: /services
+              - generic:
+                - generic: Services
+                - generic: Services
+        - link "Work with us" [ref=e10] [cursor=pointer]:
+          - /url: /contact
+          - generic [ref=e14]: Work with us
+          - generic [ref=e15]:
+            - generic [ref=e17]: Work with us
+            - img [ref=e20]
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e27]:
+          - generic:
+            - heading "Elevate mission" [level=2]:
+              - generic:
+                - generic: Elevate
+              - generic:
+                - generic: mission
+            - heading "Develop the future" [level=2]:
+              - generic:
+                - generic: Develop
+              - generic:
+                - generic: the future
+            - heading "Realize products" [level=2]:
+              - generic:
+                - generic: Realize
+              - generic:
+                - generic: products
+            - heading "Outpace metrics" [level=2]:
+              - generic:
+                - generic: Outpace
+              - generic:
+                - generic: metrics
+            - heading "Engage community" [level=2]:
+              - generic:
+                - generic: Engage
+              - generic:
+                - generic: community
+          - generic [ref=e29]:
+            - link "Snowy, jagged mountain range with a blue tint under a dramatic cloudy sky; mist coils through valleys and dark forested slopes rise in the foreground." [ref=e31] [cursor=pointer]:
+              - /url: https://www.metajive.com/work/alterra
+              - img "Snowy, jagged mountain range with a blue tint under a dramatic cloudy sky; mist coils through valleys and dark forested slopes rise in the foreground." [ref=e33]
+            - button "Play/Pause video button" [ref=e34] [cursor=pointer]:
+              - img
+              - img
+          - generic [ref=e35]:
+            - generic [ref=e36]:
+              - link "Visit Alterra case study" [ref=e38] [cursor=pointer]:
+                - /url: https://www.metajive.com/work/alterra
+              - link "Visit Google Flow case study" [ref=e42] [cursor=pointer]:
+                - /url: https://www.metajive.com/work/flow-launch
+              - link "Visit HP case study" [ref=e46] [cursor=pointer]:
+                - /url: https://www.metajive.com/work/hp-all-in-plan
+            - generic [ref=e55]:
+              - heading "Building brands through meticulously crafted digital experiences that perform." [level=1] [ref=e56]
+              - link "View Our Work" [ref=e58] [cursor=pointer]:
+                - /url: https://www.metajive.com/work
+                - generic [ref=e62]: View Our Work
+                - generic [ref=e63]:
+                  - generic [ref=e65]: View Our Work
+                  - img [ref=e68]
+        - generic [ref=e70]:
+          - generic [ref=e72]:
+            - paragraph [ref=e73]
+            - link "More about Metajive" [ref=e77] [cursor=pointer]:
+              - /url: https://www.metajive.com/about
+              - generic:
+                - generic: More about Metajive
+                - generic: More about Metajive
+          - generic:
+            - img
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - button [ref=e84] [cursor=pointer]:
+              - img
+              - img
+            - generic [ref=e85]:
+              - heading "Opening up the world of AI-enabled breakthroughs" [level=2] [ref=e86]:
+                - paragraph [ref=e87]: Opening up the world of AI-enabled breakthroughs
+              - paragraph [ref=e89]: At Metajive, we turn AI's promise into real business gains. By combining smart tech with sharp human insight, we cut through the hype to deliver focused solutions that drive growth—fast.
+              - link "View More" [ref=e90] [cursor=pointer]:
+                - /url: https://www.metajive.com/ai
+                - generic [ref=e91]: View More
+                - generic [ref=e92]:
+                  - img [ref=e94]
+                  - img [ref=e97]
+          - generic:
+            - img
+        - generic [ref=e100]:
+          - heading "Featured Work" [level=2] [ref=e102]:
+            - paragraph [ref=e103]: Featured Work
+          - generic [ref=e104]:
+            - link "Go to Google project page" [ref=e105] [cursor=pointer]:
+              - /url: /work/flow-launch
+            - link "Go to Nike project page" [ref=e111] [cursor=pointer]:
+              - /url: /work/nike-audio-guided-runs
+            - link "Go to Lyft project page" [ref=e117] [cursor=pointer]:
+              - /url: /work/lyft
+            - link "Go to HP project page" [ref=e123] [cursor=pointer]:
+              - /url: /work/hp-all-in-plan
+            - link "Go to VideoAmp project page" [ref=e129] [cursor=pointer]:
+              - /url: /work/videoamp
+          - link "View All Projects ( 20 )" [ref=e136] [cursor=pointer]:
+            - /url: /work
+            - generic [ref=e137]: View All Projects ( 20 )
+            - generic [ref=e138]:
+              - img [ref=e140]
+              - img [ref=e143]
+        - generic [ref=e145]:
+          - generic [ref=e147]:
+            - paragraph [ref=e148]
+            - paragraph [ref=e153]: Metajive turns big ideas into real results. Our mix of sharp strategy and technical know-how means every solution we build actually works—out there, where it counts.
+          - list [ref=e157]:
+            - listitem [ref=e158]:
+              - paragraph [ref=e159]: Digital strategy
+            - listitem [ref=e160]:
+              - paragraph [ref=e161]: User experience (UX)
+            - listitem [ref=e162]:
+              - paragraph [ref=e163]: User interface (UI) & design systems
+            - listitem [ref=e164]:
+              - paragraph [ref=e165]: Creative content
+            - listitem [ref=e166]:
+              - link "Shopify E-Commerce Solutions" [ref=e167] [cursor=pointer]:
+                - /url: https://www.metajive.com/shopify-development
+            - listitem [ref=e168]:
+              - link "Hubspot CRM Solutions" [ref=e169] [cursor=pointer]:
+                - /url: https://www.metajive.com/hubspot-agency
+            - listitem [ref=e170]:
+              - link "Applied AI" [ref=e171] [cursor=pointer]:
+                - /url: https://www.metajive.com/ai
+            - listitem [ref=e172]:
+              - paragraph [ref=e173]: Search engine & answer engine optimization (SEO/AEO)
+            - listitem [ref=e174]:
+              - paragraph [ref=e175]: Development & engineering
+            - listitem [ref=e176]:
+              - paragraph [ref=e177]: Mobile app design & development
+            - listitem [ref=e178]:
+              - paragraph [ref=e179]: Digital product design & development
+          - generic:
+            - img
+        - generic [ref=e183]:
+          - heading "Partner Feedback" [level=3] [ref=e185]
+          - blockquote [ref=e187]:
+            - paragraph [ref=e188]
+          - generic [ref=e191]:
+            - img "Black-and-white portrait of a person with long wavy hair, wearing a striped top, smiling, with a leafy background." [ref=e193]
+            - generic [ref=e194]:
+              - generic [ref=e195]: Amy Hinsley
+              - generic [ref=e196]: Global Head of Marketing, Consumer Services & Solutions — HP
+      - generic [ref=e198]:
+        - generic [ref=e200]:
+          - heading [level=2] [ref=e201]
+          - generic [ref=e205]:
+            - generic [ref=e206]:
+              - text: "Sign-up for our newsletter:"
+              - textbox "Enter your company email" [ref=e207]
+            - button [ref=e208] [cursor=pointer]:
+              - img [ref=e209]
+              - img [ref=e211]
+          - navigation:
+            - list:
+              - listitem:
+                - link "Work" [ref=e213] [cursor=pointer]:
+                  - /url: /work
+                  - generic:
+                    - generic: Work
+                    - generic: Work
+              - listitem:
+                - link "Applied AI" [ref=e214] [cursor=pointer]:
+                  - /url: /ai
+                  - generic:
+                    - generic: Applied AI
+                    - generic: Applied AI
+              - listitem:
+                - link "About" [ref=e215] [cursor=pointer]:
+                  - /url: /about
+                  - generic:
+                    - generic: About
+                    - generic: About
+              - listitem:
+                - link "Services" [ref=e216] [cursor=pointer]:
+                  - /url: /services
+                  - generic:
+                    - generic: Services
+                    - generic: Services
+              - listitem:
+                - link "Latest" [ref=e217] [cursor=pointer]:
+                  - /url: /latest
+                  - generic:
+                    - generic: Latest
+                    - generic: Latest
+              - listitem:
+                - link "Careers" [ref=e218] [cursor=pointer]:
+                  - /url: /careers
+                  - generic:
+                    - generic: Careers
+                    - generic: Careers
+              - listitem:
+                - link "Contact Us" [ref=e219] [cursor=pointer]:
+                  - /url: /contact
+                  - generic:
+                    - generic: Contact Us
+                    - generic: Contact Us
+            - list:
+              - listitem:
+                - link "LinkedIn" [ref=e220] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/company/metajive
+                  - generic:
+                    - generic: LinkedIn
+                    - generic: LinkedIn
+              - listitem:
+                - link "GlassDoor" [ref=e221] [cursor=pointer]:
+                  - /url: https://www.glassdoor.com/Overview/Working-at-metajive-EI_IE3291133.11,19.htm
+                  - generic:
+                    - generic: GlassDoor
+                    - generic: GlassDoor
+              - listitem:
+                - link "Instagram" [ref=e222] [cursor=pointer]:
+                  - /url: https://www.instagram.com/metajivedesign
+                  - generic:
+                    - generic: Instagram
+                    - generic: Instagram
+            - button "Back to Top" [ref=e223] [cursor=pointer]:
+              - text: Back to Top
+              - generic [ref=e224]:
+                - img [ref=e225]
+                - img [ref=e227]
+        - generic [ref=e230]:
+          - generic [ref=e231]:
+            - link "Let's Talk" [ref=e232] [cursor=pointer]:
+              - /url: https://www.metajive.com/contact
+              - text: Let's Talk
+              - generic [ref=e233]:
+                - img [ref=e234]
+                - img [ref=e236]
+            - link [ref=e238] [cursor=pointer]:
+              - /url: https://www.metajive.com/contact
+              - text: Let's Talk
+              - generic [ref=e239]:
+                - img [ref=e240]
+                - img [ref=e242]
+          - generic [ref=e244]:
+            - link [ref=e245] [cursor=pointer]:
+              - /url: https://www.metajive.com/contact
+              - text: Let's Talk
+              - generic [ref=e246]:
+                - img [ref=e247]
+                - img [ref=e249]
+            - link [ref=e251] [cursor=pointer]:
+              - /url: https://www.metajive.com/contact
+              - text: Let's Talk
+              - generic [ref=e252]:
+                - img [ref=e253]
+                - img [ref=e255]
+        - generic [ref=e258]:
+          - link "A TOGETHER GROUP COMPANY" [ref=e259] [cursor=pointer]:
+            - /url: https://togethergroup.com/
+            - img [ref=e260]
+            - generic [ref=e262]: A TOGETHER GROUP COMPANY
+          - generic [ref=e264]:
+            - paragraph [ref=e265]: ⓒ 2026 Metajive. All Rights Reserved
+            - link "Privacy Policy" [ref=e266] [cursor=pointer]:
+              - /url: /privacy-policy
+            - link "543 Encinitas Blvd, Unit 113, Encinitas, CA 92024" [ref=e267] [cursor=pointer]:
+              - /url: ""
+  - alert [ref=e268]

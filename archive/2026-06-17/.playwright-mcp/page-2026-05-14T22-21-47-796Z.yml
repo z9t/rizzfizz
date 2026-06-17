@@ -1,0 +1,22 @@
+- generic [active] [ref=e1]:
+  - banner:
+    - navigation [ref=e2]:
+      - link "Aino" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e5]:
+        - link "Work" [ref=e6] [cursor=pointer]:
+          - /url: /work
+        - link "Services" [ref=e7] [cursor=pointer]:
+          - /url: /services
+      - generic [ref=e8]:
+        - link "About" [ref=e9] [cursor=pointer]:
+          - /url: /about
+        - link "Play" [ref=e10] [cursor=pointer]:
+          - /url: /play
+      - generic [ref=e11]:
+        - button "Settings" [ref=e12] [cursor=pointer]
+        - link "Contact" [ref=e13] [cursor=pointer]:
+          - /url: /contact
+  - main [ref=e14]:
+    - generic [ref=e16]: ==========================================================
+  - generic [ref=e17]: .

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === 'copy' && msg.text) {
+    navigator.clipboard.writeText(msg.text).then(() => {
+      console.log('[GrabGallery] clipboard written');
+      window.close();
+    });
+  }
+});
+</script>
+</body>
+</html>

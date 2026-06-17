@@ -55,7 +55,23 @@ rizzfizz scrub-md ~/.design/DESIGN-ifp.md --variants 5
 rizzfizz scrub --input raw-reference.json
 rizzfizz palette --brief scrubbed-design-dna.json --variants 6
 rizzfizz export --format css-vars --input palette-run.json
+rizzfizz import-brief-weaver --input /Users/max/Documents/Code/brief-weaver/brief-weaver-runs/<run_id> --out ./runs/<run_id>
 ```
+
+## Current Brief Weaver Bridge
+
+Use the bridge when Brief Weaver has already produced `brief-weaver-runs/<run_id>/` and you want a normal RizzFizz run folder:
+
+```sh
+cd /Users/max/Documents/Code/rizzfizz
+npm install
+npm run build
+node bin/cli.js import-brief-weaver \
+  --input /Users/max/Documents/Code/brief-weaver/brief-weaver-runs/<run_id> \
+  --out ./runs/<run_id>
+```
+
+The bridge maps Brief Weaver's source-safe `scrubbed/`, `variants/`, `palettes/`, and `variation-manifest.json` files into RizzFizz's `run-manifest.json`, `palette-run.json`, `variants-palette.json`, `variants.json`, `builder-briefs/`, and `preview.html`. It does not copy Brief Weaver `raw/` contents into builder-facing artifacts; private provenance stays in `raw-reference.json`.
 
 Possible local API later:
 

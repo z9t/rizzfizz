@@ -38,7 +38,6 @@ export async function sendPidgeHandoff(options: PidgeHandoffOptions): Promise<Pi
   const pidge = options.pidge || DEFAULT_PIDGE;
   validateAgentName(options.from, "--from");
   validateAgentName(options.to, "--to");
-  await access(pidge);
 
   const run = paletteRunSchema.parse(await readJson(join(inputDir, "palette-run.json"))) as PaletteRun;
   const selectedVariants = selectVariants(run, options.variant || "all");
@@ -107,6 +106,8 @@ async function writeHandoffPayload(
       tool: "rizzfizz",
       palette_run: join(inputDir, "palette-run.json"),
       variants_palette: join(inputDir, "variants-palette.json"),
+      variants_json: await exists(join(inputDir, "variants.json")) ? join(inputDir, "variants.json") : null,
+      preview_html: await exists(join(inputDir, "preview.html")) ? join(inputDir, "preview.html") : null,
       scrubbed_design_dna: join(inputDir, "scrubbed-design-dna.json"),
       build_contract: await exists(join(inputDir, "build-contract.json")) ? join(inputDir, "build-contract.json") : null,
       visual_tokens: await exists(join(inputDir, "visual-tokens.json")) ? join(inputDir, "visual-tokens.json") : null,
@@ -150,6 +151,8 @@ async function collectAttachments(inputDir: string, variantIds: string[], includ
     join(inputDir, "scrubbed-design-dna.json"),
     join(inputDir, "palette-run.json"),
     join(inputDir, "variants-palette.json"),
+    join(inputDir, "variants.json"),
+    join(inputDir, "preview.html"),
     join(inputDir, "tokens.css"),
     join(inputDir, "technology-context.json"),
     join(inputDir, "DESIGN-neutral.md"),

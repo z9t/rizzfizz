@@ -1,0 +1,39 @@
+{
+  "date": "2026-06-17",
+  "moved": [
+    {
+      "from": ".playwright-mcp",
+      "to": "archive/2026-06-17/.playwright-mcp"
+    },
+    {
+      "from": "A-EYES-INTEGRATION-BOUNDARY.md",
+      "to": "archive/2026-06-17/A-EYES-INTEGRATION-BOUNDARY.md"
+    },
+    {
+      "from": "PROJECT_VISION.md",
+      "to": "archive/2026-06-17/PROJECT_VISION.md"
+    },
+    {
+      "from": "ROADMAP.md",
+      "to": "archive/2026-06-17/ROADMAP.md"
+    },
+    {
+      "from": "bookmarklets",
+      "to": "archive/2026-06-17/bookmarklets"
+    },
+    {
+      "from": "eval",
+      "to": "archive/2026-06-17/eval"
+    },
+    {
+      "from": "extensions",
+      "to": "archive/2026-06-17/extensions"
+    },
+    {
+      "from": "plans",
+      "to": "archive/2026-06-17/plans"
+    }
+  ],
+  "reason": "tidy dirty tree: archive planning/eval/misc non-runtime artifacts; code/test implementation files left in place",
+  "repo": "/Users/max/Documents/Code/rizzfizz"
+}

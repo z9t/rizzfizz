@@ -1,0 +1,64 @@
+- generic [active] [ref=e1]:
+  - main:
+    - generic [ref=e2]:
+      - heading "McLane is a product designer whose work is driven by simplicity and visual expression." [level=1] [ref=e3]
+      - generic [ref=e4]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic: Squarespace
+                  - generic: Designer, Design Manager
+                  - generic: 2015–22
+              - generic:
+                - generic:
+                  - generic: Airbnb Workshop
+                  - generic: Staff Experience Designer
+                  - generic: 2022–24
+              - generic:
+                - generic:
+                  - generic: Instagram Friend Sharing
+                  - generic: Staff Product Designer
+                  - generic: 2024–25
+              - generic:
+                - generic:
+                  - generic: Shopify
+                  - generic: Product Design Studio
+                  - generic: 2025–Present
+              - generic:
+                - img "Squarespace"
+                - img "Airbnb Workshop"
+                - img "Instagram Friend Sharing"
+                - img "Shopify"
+            - paragraph:
+              - text: McLane is on the Product Design Studio™ at Shopify reimagining how people sell and shop. He previously worked at Squarespace, Airbnb, and Instagram, and teaches interaction design and senior portfolio at the School of Visual Arts in New York.
+              - generic:
+                - generic:
+                  - button "Copy email address":
+                    - text: Get in touch
+                    - generic:
+                      - generic: →
+                      - generic: →
+                  - generic: I'm touched
+              - generic:
+                - generic: Email copied
+        - img "Shopify Pulse" [ref=e19]
+        - img "Sidekick Chat" [ref=e22]
+        - img "Squarespace" [ref=e40]
+        - img "Squarespace Homepage" [ref=e43]
+        - img "Fluid Engine" [ref=e46]
+      - generic:
+        - link:
+          - /url: https://www.linkedin.com/in/mclane-teitel-0888a489/
+          - img
+        - link:
+          - /url: https://x.com/mclaneteitel
+          - img
+        - link:
+          - /url: https://www.instagram.com/mclaneteitel/
+          - img
+        - link:
+          - /url: https://venmo.com/u/mclane
+          - img
+  - alert [ref=e50]

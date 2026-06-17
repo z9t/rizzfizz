@@ -1,0 +1,280 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e3]:
+    - link "timespent" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - text: timespent
+    - generic [ref=e6]:
+      - link "Join Discord" [ref=e7] [cursor=pointer]:
+        - /url: https://discord.gg/qNwmKDRGyq
+      - link "Download on the App Store" [ref=e8] [cursor=pointer]:
+        - /url: https://apps.apple.com/us/app/timespent-activity-timer/id6742226600
+        - generic [ref=e12]: Get timespent
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - text: ★★★★★
+          - generic [ref=e18]: 15K+ downloads
+        - heading "Focus. Flourish. Go timespent." [level=1] [ref=e19]:
+          - text: Focus. Flourish.
+          - text: Go timespent.
+        - heading "The all-in-one anything tracker. Goals, routines, progress—if you can do it, timespent can track it." [level=2] [ref=e20]:
+          - text: The all-in-one anything tracker. Goals, routines, progress—if you can do it, timespent can track it.
+          - generic [ref=e21]: 🪕
+        - link "Download on the App Store" [ref=e23] [cursor=pointer]:
+          - /url: https://apps.apple.com/us/app/timespent-activity-timer/id6742226600
+          - generic [ref=e27]: Download on the App Store
+        - generic [ref=e29]:
+          - generic [ref=e32]:
+            - generic [ref=e33]: Editors' Choice
+            - generic [ref=e34]: Apps We Love
+          - generic [ref=e38]:
+            - generic [ref=e39]: Editors' Choice
+            - generic [ref=e40]: Best New Apps
+      - generic [ref=e43]:
+        - link "Download on the App Store" [ref=e44] [cursor=pointer]:
+          - /url: https://apps.apple.com/us/app/timespent-activity-timer/id6742226600
+          - img "timespent Reading activity screen with a session timer dial and Clifford the Big Red Dog illustration, a progress ring showing 12 hours 23 minutes for March compared to 6 hours 1 minute for February with a line chart, and menu options for All Sessions, Calendar, and Trends" [ref=e51]
+        - generic [ref=e52]:
+          - button "Previous screen" [ref=e53] [cursor=pointer]:
+            - img [ref=e54]
+          - button "Next screen" [ref=e56] [cursor=pointer]:
+            - img [ref=e57]
+          - button "Pause animation" [ref=e59] [cursor=pointer]:
+            - img [ref=e60]
+        - img "Cool dog wearing sunglasses" [ref=e63]
+        - generic [ref=e64]:
+          - button "Widgets" [ref=e65] [cursor=pointer]:
+            - generic [ref=e69]: Widgets
+          - button "Goals" [ref=e70] [cursor=pointer]:
+            - generic [ref=e74]: Goals
+          - button "Routines" [ref=e75] [cursor=pointer]:
+            - generic [ref=e79]: Routines
+          - button "Streaks" [ref=e80] [cursor=pointer]:
+            - generic [ref=e84]: Streaks
+          - button "Progress" [ref=e85] [cursor=pointer]:
+            - generic [ref=e89]: Progress
+          - button "Mood" [ref=e90] [cursor=pointer]:
+            - generic [ref=e94]: Mood
+    - generic [ref=e95]:
+      - heading "To be the best you can be." [level=2] [ref=e96]:
+        - text: To
+        - mark [ref=e97]: be the best
+        - text: you can be.
+      - generic [ref=e98]:
+        - generic [ref=e99]:
+          - heading "Better Habits" [level=3] [ref=e100]
+          - heading "Track your daily habits. Watch small wins turn into lasting change." [level=4] [ref=e101]
+          - img "timespent home screen widgets showing Wake Up Early with a habit calendar, Walking with 20 minutes logged today, and Doom Scrolling with a month-over-month comparison chart" [ref=e104]
+        - generic [ref=e105]:
+          - heading "Harder Workouts" [level=3] [ref=e106]
+          - heading "Log every set, track each rep, and crush your personal records." [level=4] [ref=e107]
+          - img "timespent year in review screen showing 197 weight personal records set across 52 activities, with top lifts including Linear Leg Press at 220 kg and Deadlift at 150 kg" [ref=e110]
+        - generic [ref=e111]:
+          - heading "Focus & Study Time" [level=3] [ref=e112]
+          - heading "Time your focus sessions and build streaks that actually stick." [level=4] [ref=e113]
+          - img "timespent focus timer session screen displaying a Marcus Aurelius quote, a running stopwatch at 00:00:05, and pause and done controls" [ref=e116]
+        - generic [ref=e117]:
+          - heading "Rx & Supplements" [level=3] [ref=e118]
+          - heading "Set reminders for medication refills. Never miss a dose again." [level=4] [ref=e119]
+          - img "timespent My Day screen with a push notification reminder to take Vitamin C, a weekly calendar, a daily plan with the supplement highlighted, and a history log of recent activities" [ref=e122]
+        - generic [ref=e123]:
+          - heading "Proper Hydration" [level=3] [ref=e124]
+          - heading "Log daily intake and drink enough water to thrive, not just survive." [level=4] [ref=e125]
+          - img "timespent achievement screen celebrating Your First Tally for Daily Hydration at 1 liter all-time, with a grid of hydration tracking cards in the background" [ref=e128]
+        - generic [ref=e129]:
+          - heading "Money Matters" [level=3] [ref=e130]
+          - heading "See exactly where your money goes and stay on top of your budget goals." [level=4] [ref=e131]
+          - img "timespent activity detail screen for Daily Bangkok Spend showing $15.88 total and $4.12 spent today, with links to All Tallies, Calendar, and Trends" [ref=e134]
+        - generic [ref=e135]:
+          - heading "Project Pan" [level=3] [ref=e136]
+          - heading "Track makeup and skincare products—without letting them go to waste." [level=4] [ref=e137]
+          - img "timespent year in review screen showing 21,927 tallies added to 87 activities, with a contribution-style heatmap calendar for Aquaphor tracking 442 tallies from September to December" [ref=e140]
+        - link "Download on the App Store" [ref=e141] [cursor=pointer]:
+          - /url: https://apps.apple.com/us/app/timespent-activity-timer/id6742226600
+          - generic [ref=e144]:
+            - heading "... and everything else." [level=3] [ref=e145]
+            - heading "Whoever you're becoming, timespent can help you reach your best self." [level=4] [ref=e146]
+            - img "timespent App Store listing showing the tagline Be The Best You Can Be, featured activities like flourish, moisturize, and focus, an App Store Editors' Choice Apps We Love badge, and a five-star rating" [ref=e149]
+    - generic [ref=e150]:
+      - generic [ref=e151]:
+        - heading "Endlessly customizable, uniquely yours." [level=2] [ref=e152]:
+          - text: Endlessly customizable,
+          - text: uniquely yours.
+        - paragraph [ref=e153]: Choose from dozens of widgets to truly make timespent your own—both in the app and on your Home screen.
+      - generic [ref=e155]:
+        - generic [ref=e156]:
+          - img "Walking activity large calendar widget showing daily tracking for March 2026 with green contribution squares" [ref=e160]
+          - img "Stretching activity contribution calendar widget showing five months of daily tracking from November to March" [ref=e164]
+          - img "Start Session widget with a play button surrounded by Quick Add 1 text" [ref=e168]
+          - img "Deadlift summary widget showing a progress ring at 83% with an all-time max of 150 kg" [ref=e172]
+          - img "focus trend widget showing a progress ring and cumulative line chart comparing 16 hours 6 minutes in March to 9 hours 49 minutes in February" [ref=e176]
+          - img "flourish activity small calendar widget showing a monthly contribution grid with teal squares" [ref=e180]
+          - img "Quick Add widget with a plus button surrounded by Quick Add 1 text" [ref=e184]
+          - img "Aerial view of a winding mountain road through lush green hills" [ref=e188]
+          - img "Rahmat Erwin Abdullah performing a clean and jerk at an Aspire weightlifting competition" [ref=e192]
+          - img "White and grey cat sitting upright with a curious expression" [ref=e196]
+          - img "Colorful hand-drawn illustration of lofi girl and cat studying at a desk" [ref=e200]
+        - generic [ref=e201]:
+          - img "Supertrend large widget showing 24 hours 13 minutes total for March 2026 with an area chart breaking down focus and flourish time" [ref=e205]
+          - img "Stretching activity trends widget showing a progress ring and monthly bar chart with 35 hours 3 minutes total for 2026" [ref=e209]
+          - img "Overhead photo of a cup of coffee on a warm beige background" [ref=e213]
+          - img "Stone arches and columns in Stanford University's Main Quad" [ref=e217]
+          - img "Hikers walking along a fenced trail at Stanford Dish with golden hills and a hazy skyline" [ref=e221]
+          - img "Daily Bangkok Spend summary widget showing a progress ring at $6.55 today with a $13.45 daily limit" [ref=e225]
+          - img "Limes activity small calendar widget showing a monthly contribution grid with lime green squares" [ref=e229]
+          - img "Silhouette of a runner sprinting across a bridge against an orange sunset cityscape" [ref=e233]
+          - img "Calvin and Hobbes standing together in falling snow" [ref=e237]
+          - img "Add Tally widget with a plus button surrounded by Add Tally text and red envelope icons" [ref=e241]
+          - img "Waves crashing against dark rocky cliffs at golden hour with misty ocean spray" [ref=e245]
+        - generic [ref=e246]:
+          - img "Walking activity large calendar widget showing daily tracking for March 2026 with green contribution squares" [ref=e250]
+          - img "Stretching activity contribution calendar widget showing five months of daily tracking from November to March" [ref=e254]
+          - img "Start Session widget with a play button surrounded by Quick Add 1 text" [ref=e258]
+          - img "Deadlift summary widget showing a progress ring at 83% with an all-time max of 150 kg" [ref=e262]
+          - img "focus trend widget showing a progress ring and cumulative line chart comparing 16 hours 6 minutes in March to 9 hours 49 minutes in February" [ref=e266]
+          - img "flourish activity small calendar widget showing a monthly contribution grid with teal squares" [ref=e270]
+          - img "Quick Add widget with a plus button surrounded by Quick Add 1 text" [ref=e274]
+          - img "Aerial view of a winding mountain road through lush green hills" [ref=e278]
+          - img "Rahmat Erwin Abdullah performing a clean and jerk at an Aspire weightlifting competition" [ref=e282]
+          - img "White and grey cat sitting upright with a curious expression" [ref=e286]
+          - img "Colorful hand-drawn illustration of lofi girl and cat studying at a desk" [ref=e290]
+        - generic [ref=e291]:
+          - img "Supertrend large widget showing 24 hours 13 minutes total for March 2026 with an area chart breaking down focus and flourish time" [ref=e295]
+          - img "Stretching activity trends widget showing a progress ring and monthly bar chart with 35 hours 3 minutes total for 2026" [ref=e299]
+          - img "Overhead photo of a cup of coffee on a warm beige background" [ref=e303]
+          - img "Stone arches and columns in Stanford University's Main Quad" [ref=e307]
+          - img "Hikers walking along a fenced trail at Stanford Dish with golden hills and a hazy skyline" [ref=e311]
+          - img "Daily Bangkok Spend summary widget showing a progress ring at $6.55 today with a $13.45 daily limit" [ref=e315]
+          - img "Limes activity small calendar widget showing a monthly contribution grid with lime green squares" [ref=e319]
+          - img "Silhouette of a runner sprinting across a bridge against an orange sunset cityscape" [ref=e323]
+          - img "Calvin and Hobbes standing together in falling snow" [ref=e327]
+          - img "Add Tally widget with a plus button surrounded by Add Tally text and red envelope icons" [ref=e331]
+          - img "Waves crashing against dark rocky cliffs at golden hour with misty ocean spray" [ref=e335]
+    - generic [ref=e337]:
+      - generic [ref=e338]:
+        - heading "The reviews are in." [level=2] [ref=e339]
+        - paragraph [ref=e340]: See why so many people love using timespent to build better habits, track their goals, and become the best version of themselves.
+        - link "Download on the App Store" [ref=e342] [cursor=pointer]:
+          - /url: https://apps.apple.com/us/app/timespent-activity-timer/id6742226600
+          - generic [ref=e346]: See for yourself
+      - generic [ref=e349]:
+        - generic [ref=e350]:
+          - generic [ref=e351]:
+            - generic [ref=e352]: ★★★★★
+            - generic [ref=e353]: "\"Seriously my new favorite app!\""
+            - generic [ref=e354]:
+              - generic [ref=e355]: jessicalouise
+              - generic [ref=e356]: 🇺🇸
+          - generic:
+            - generic: ★★★★★
+            - generic: "\"This app is functionally and aesthetically one of the best iOS applications I have ever come by.\""
+            - generic:
+              - generic: Costlyrocket
+              - generic: 🇺🇸
+          - generic:
+            - generic: ★★★★★
+            - generic: "\"Best time tracker I’ve ever used!\""
+            - generic:
+              - generic: agally01
+              - generic: 🇺🇸
+          - generic:
+            - generic: ★★★★★
+            - generic: "\"I’ve tried many habit tracker apps and this one is by far the best.\""
+            - generic:
+              - generic: Jamiefromcalitx
+              - generic: 🇺🇸
+          - generic [ref=e357]:
+            - generic [ref=e358]: ★★★★★
+            - generic [ref=e359]: "\"Es simple, pero poderosa ... Mil estrellas ✨\""
+            - generic [ref=e360]:
+              - generic [ref=e361]: Yeah It's Me !
+              - generic [ref=e362]: 🇲🇽
+          - generic [ref=e363]:
+            - generic [ref=e364]: ★★★★★
+            - generic [ref=e365]: "\"La aplicación es sencillamente estupenda. Hace precisamente lo que dice ... me encanta.\""
+            - generic [ref=e366]:
+              - generic [ref=e367]: SaúlElberth
+              - generic [ref=e368]: 🇨🇱
+        - generic [ref=e369]:
+          - button "Previous review" [ref=e370] [cursor=pointer]:
+            - img [ref=e371]
+          - button "Next review" [ref=e373] [cursor=pointer]:
+            - img [ref=e374]
+          - button "Pause animation" [ref=e376] [cursor=pointer]:
+            - img [ref=e377]
+    - region "Your questions, answered." [ref=e378]:
+      - heading "Your questions, answered." [level=2] [ref=e379]:
+        - text: Your questions,
+        - mark [ref=e380]: answered
+        - text: .
+      - paragraph
+      - generic [ref=e381]:
+        - group [ref=e382]:
+          - generic "What is timespent? +" [ref=e383] [cursor=pointer]
+        - group [ref=e384]:
+          - generic "Is timespent free? +" [ref=e385] [cursor=pointer]
+        - group [ref=e386]:
+          - generic "Which platforms are supported? +" [ref=e387] [cursor=pointer]
+        - group [ref=e388]:
+          - generic "Do I need to create an account? Is my data private? +" [ref=e389] [cursor=pointer]
+        - group [ref=e390]:
+          - generic "What are Arcs? +" [ref=e391] [cursor=pointer]
+        - group [ref=e392]:
+          - generic "What are Supertrends? +" [ref=e393] [cursor=pointer]
+        - group [ref=e394]:
+          - generic "What are Reflections? +" [ref=e395] [cursor=pointer]
+        - group [ref=e396]:
+          - generic "Can I import or export my data? +" [ref=e397] [cursor=pointer]
+        - group [ref=e398]:
+          - generic "What if I have more questions? +" [ref=e399] [cursor=pointer]
+      - paragraph
+  - contentinfo [ref=e400]:
+    - generic [ref=e401]:
+      - generic [ref=e402]:
+        - link "Home" [ref=e403] [cursor=pointer]:
+          - /url: /
+        - link "Download on the App Store" [ref=e405] [cursor=pointer]:
+          - /url: https://apps.apple.com/us/app/timespent-activity-timer/id6742226600
+          - generic [ref=e409]: Get timespent
+      - generic [ref=e411]:
+        - heading "timespent" [level=2] [ref=e412]
+        - list [ref=e413]:
+          - listitem [ref=e414]:
+            - link "What’s New" [ref=e415] [cursor=pointer]:
+              - /url: /whats-new/
+          - listitem [ref=e416]:
+            - link "Arc Spotlight" [ref=e417] [cursor=pointer]:
+              - /url: /arc-spotlight/
+      - generic [ref=e418]:
+        - heading "Connect" [level=2] [ref=e419]
+        - list [ref=e420]:
+          - listitem [ref=e421]:
+            - link "Email" [ref=e422] [cursor=pointer]:
+              - /url: https://forms.gle/gqZW7vMqWP8LP9647
+          - listitem [ref=e423]:
+            - link "Discord" [ref=e424] [cursor=pointer]:
+              - /url: https://discord.gg/qNwmKDRGyq
+          - listitem [ref=e425]:
+            - link "X (Twitter)" [ref=e426] [cursor=pointer]:
+              - /url: https://x.com/hicalkim
+          - listitem [ref=e427]:
+            - link "Threads" [ref=e428] [cursor=pointer]:
+              - /url: https://threads.com/!hicalkim
+      - generic [ref=e429]:
+        - heading "Other Stuff" [level=2] [ref=e430]
+        - list [ref=e431]:
+          - listitem [ref=e432]:
+            - link "Privacy" [ref=e433] [cursor=pointer]:
+              - /url: /privacy/
+          - listitem [ref=e434]:
+            - link "Terms" [ref=e435] [cursor=pointer]:
+              - /url: /terms/
+    - generic [ref=e436]:
+      - generic [ref=e437]:
+        - generic [ref=e438]: Made with ♥ around the world, currently 📍Bangkok.
+        - generic [ref=e439]: © 2026 Glasshouse Studio, LLC
+      - radiogroup "Theme" [ref=e440]:
+        - button "System theme" [ref=e441] [cursor=pointer]: System
+        - button "Light theme" [ref=e442] [cursor=pointer]
+        - button "Dark theme" [ref=e444] [cursor=pointer]

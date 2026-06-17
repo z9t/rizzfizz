@@ -51,6 +51,37 @@ export type PaletteRun = {
   variants: PaletteVariant[];
 };
 
+export type DesignSystemQualities = {
+  logical_unit: string;
+  grid_behavior: string;
+  density: string;
+  hierarchy: string;
+  typography: string;
+  ornamentation: string;
+  entropy: string;
+  interaction_feel: string;
+  token_usage: string;
+};
+
+export type DesignSystemStyleMatch = {
+  id: string;
+  name: string;
+  summary: string;
+  confidence: number;
+  confidence_label: "low" | "medium" | "high";
+  score: number;
+  qualities: DesignSystemQualities;
+  builder_guidance: string[];
+};
+
+export type DesignSystemClassification = {
+  schema: "rizzfizz.design-system-classification.v1";
+  primary: DesignSystemStyleMatch;
+  secondary: DesignSystemStyleMatch | null;
+  matched_qualities: string[];
+  source_safe_evidence: string[];
+};
+
 export type RawReference = {
   schema: "rizzfizz.raw-reference.v1";
   source_type: "design-md";
@@ -127,12 +158,31 @@ export type BuildContractVariant = {
   visual_rules: string[];
 };
 
+export type DesignScoreVariantGuidance = {
+  source: "design-score-report";
+  report_card: {
+    score: number;
+    grade: string;
+    summary: string;
+  };
+  palette_constraints: string[];
+  archetype_constraints: {
+    locked: string[];
+    may_vary: string[];
+    verify: string[];
+  };
+  combined_guidance: string[];
+  qa_checks: string[];
+  do_not_clone: string[];
+};
+
 export type BuildContract = {
   schema: "rizzfizz.build-contract.v1";
   created_at: string;
   source_safe: true;
   source_reference_ids: string[];
   entrypoint: string;
+  design_system_classification: DesignSystemClassification;
   intent: PageIntent;
   layout: LayoutContract;
   components: ComponentContract;
@@ -198,6 +248,8 @@ export type RunManifest = {
     visual_tokens: string;
     palette_run: string;
     variants_palette: string;
+    variants_json: string;
+    preview_html: string;
     tokens_css: string;
     builder_briefs: string;
   };
@@ -206,6 +258,7 @@ export type RunManifest = {
   };
   optional_artifacts: {
     technology_context: string | null;
+    design_score: string | null;
   };
   recommended_start: string;
   variants: Array<{
@@ -213,5 +266,43 @@ export type RunManifest = {
     name: string;
     builder_brief: string;
     design_md: string;
+  }>;
+};
+
+export type AEyesIntakeVariants = {
+  master_brief: {
+    title: string;
+    raw_idea_summary: string;
+    target_user: string;
+    site_goal: string;
+    must_include: string[];
+    must_avoid: string[];
+    content_notes: string[];
+    motion_intent: string;
+    success_criteria: string[];
+  };
+  shared_constraints: {
+    viewport_targets: string[];
+    accessibility_notes: string[];
+    technical_constraints: string[];
+    a_eyes_required: true;
+  };
+  variants: Array<{
+    id: string;
+    name: string;
+    design_direction: string;
+    layout_strategy: string;
+    palette_direction: string;
+    palette_relationship: PaletteRelationship;
+    palette_tokens: PaletteTokens;
+    palette_usage: string;
+    typography_direction: string;
+    technology_direction: Record<string, unknown>;
+    motion_direction: string;
+    hero_or_primary_view: string;
+    sections: string[];
+    specific_requirements: string[];
+    risk_notes: string[];
+    design_score_guidance?: DesignScoreVariantGuidance;
   }>;
 };

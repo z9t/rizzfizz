@@ -1,0 +1,34 @@
+{
+  "url": "https://weak.example/",
+  "status": 200,
+  "technologies": [
+    {
+      "name": "React",
+      "confidence": 20,
+      "versions": [],
+      "categories": [
+        "JavaScript frameworks"
+      ],
+      "website": "https://react.dev",
+      "evidence": [
+        {
+          "channel": "html",
+          "confidence": 20,
+          "pattern": "react",
+          "value": "A blog post mentions React in body copy."
+        }
+      ]
+    }
+  ],
+  "features": {
+    "header_count": 4,
+    "cookie_count": 0,
+    "html_length": 1700,
+    "script_count": 0,
+    "css_count": 1,
+    "meta_count": 2,
+    "probe_count": 0,
+    "probe_2xx_3xx": 0
+  },
+  "aggressive": false
+}

@@ -1,12 +1,20 @@
 import { Command } from "commander";
+import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { importBriefWeaverRun } from "./brief-weaver.js";
 import { formatCommand, sendPidgeHandoff } from "./pidge.js";
 import { buildPaletteRun, cssVarsForPalette, normalizeHueFamily, normalizeRelationship, parseHexToOklch } from "./color.js";
-import { exportAEyesTokens, exportAgentBriefs, exportCssVars } from "./exports.js";
-import { writeJson, writeText } from "./io.js";
+import { exportAEyesIntakeVariants, exportAEyesTokens, exportAgentBriefs, exportCssVars } from "./exports.js";
+import { readText, writeJson, writeText } from "./io.js";
 import { inspectRun } from "./manifest.js";
+import { writePreview } from "./preview.js";
 import { scrubDesignMarkdown } from "./scrub.js";
 import { buildTechnologyContext, readWhifflerScan, runWhiffler } from "./technology.js";
+import { exportDesignMd } from "./designmd.js";
+import { classifyDesignArchetype, designArchetypeVariantGuidance } from "./design-system-taxonomy.js";
+import { buildDesignScoreReport } from "./design-score.js";
+import { analyzePaletteFromSource } from "./palette-analysis.js";
 
 const program = new Command();
 
@@ -111,6 +119,32 @@ program.command("inspect")
     process.stdout.write(`${await inspectRun(resolve(options.input))}\n`);
   });
 
+program.command("preview")
+  .description("Generate a static source-safe HTML preview page for variant selection.")
+  .requiredOption("--input <dir>", "scrub-md run directory")
+  .requiredOption("--out <path>", "Output HTML path")
+  .action(async (options) => {
+    const outPath = await writePreview({ input: options.input, out: options.out });
+    console.log(`Wrote preview: ${outPath}`);
+  });
+
+program.command("import-brief-weaver")
+  .description("Import an existing brief-weaver-runs/<run_id> folder into a normal source-safe RizzFizz run surface.")
+  .requiredOption("--input <dir>", "Existing Brief Weaver run directory, e.g. brief-weaver-runs/<run_id>")
+  .requiredOption("--out <dir>", "Output RizzFizz run directory")
+  .option("--no-preview", "Skip preview.html generation")
+  .action(async (options) => {
+    const result = await importBriefWeaverRun({
+      input: options.input,
+      out: options.out,
+      preview: options.preview
+    });
+    console.log(`Imported Brief Weaver run: ${result.inputDir}`);
+    console.log(`Wrote RizzFizz run: ${result.outDir}`);
+    console.log(`Variants: ${result.variantIds.join(", ")}`);
+    if (result.previewPath) console.log(`Preview: ${result.previewPath}`);
+  });
+
 program.command("palette")
   .description("Generate OKLCH palette variants from a relationship preset and hue family.")
   .requiredOption("--out <path>", "Output palette-run JSON path")
@@ -130,15 +164,93 @@ program.command("palette")
     console.log(`Wrote palette run: ${resolve(options.out)}`);
   });
 
+program.command("design-archetype")
+  .description("Classify HTML/CSS implementation archetype and emit safe variant constraints.")
+  .requiredOption("--html <path>", "HTML/markup input path")
+  .requiredOption("--css <path>", "CSS input path")
+  .requiredOption("--out <path>", "Output design archetype report JSON path")
+  .action(async (options) => {
+    const htmlPath = resolve(options.html);
+    const cssPath = resolve(options.css);
+    const classification = classifyDesignArchetype({
+      html: await readText(htmlPath),
+      css: await readText(cssPath)
+    });
+    const guidance = designArchetypeVariantGuidance(classification);
+    const report = {
+      schema: "rizzfizz.design-archetype-report.v1",
+      source_safe: true,
+      inputs: {
+        html: "redacted-local-path",
+        css: "redacted-local-path"
+      },
+      feature_vector: classification.feature_vector,
+      softmax_distribution: classification.probabilities,
+      primary_archetype: classification.primary,
+      secondary_archetype: classification.secondary,
+      confidence: classification.primary.probability,
+      classification,
+      safe_variation_rules: guidance.safe_variation_rules,
+      variant_constraints: guidance.variant_constraints,
+      do_not_clone: guidance.do_not_clone,
+      guidance
+    };
+    await writeJson(resolve(options.out), report);
+    console.log(`Wrote design archetype: ${resolve(options.out)}`);
+  });
+
+program.command("palette-analyze")
+  .description("Extract a live-ish palette from CSS/HTML text and score OKLCH design quality signals.")
+  .option("--html <path>", "HTML/markup input path")
+  .option("--css <path>", "CSS input path")
+  .requiredOption("--out <path>", "Output palette analysis report JSON path")
+  .action(async (options) => {
+    if (!options.html && !options.css) {
+      throw new Error("palette-analyze requires --html or --css");
+    }
+    const report = analyzePaletteFromSource({
+      html: options.html ? await readText(resolve(options.html)) : undefined,
+      css: options.css ? await readText(resolve(options.css)) : undefined
+    });
+    await writeJson(resolve(options.out), report);
+    console.log(`Wrote palette analysis: ${resolve(options.out)}`);
+  });
+
+program.command("design-score")
+  .description("Emit a report-card design score with a-eyes palette intake and exportable palette/archetype guidance.")
+  .option("--html <path>", "HTML/markup input path")
+  .option("--css <path>", "CSS input path")
+  .option("--a-eyes-json <path>", "a-eyes JSON palette/pixel-diff artifact")
+  .option("--a-eyes-png <path>", "a-eyes PNG capture artifact for simple dominant-color extraction")
+  .option("--style-text <text>", "Optional source-safe style/archetype notes")
+  .requiredOption("--out <path>", "Output design score report JSON path")
+  .action(async (options) => {
+    if (!options.html && !options.css && !options.aEyesJson && !options.aEyesPng) {
+      throw new Error("design-score requires --html, --css, --a-eyes-json, or --a-eyes-png");
+    }
+    const report = buildDesignScoreReport({
+      html: options.html ? await readText(resolve(options.html)) : undefined,
+      css: options.css ? await readText(resolve(options.css)) : undefined,
+      aEyesJson: options.aEyesJson ? JSON.parse(await readText(resolve(options.aEyesJson))) : undefined,
+      aEyesPng: options.aEyesPng ? readFileSync(resolve(options.aEyesPng)) : undefined,
+      styleText: options.styleText
+    });
+    await writeJson(resolve(options.out), report);
+    console.log(`Wrote design score: ${resolve(options.out)}`);
+    console.log(`Grade: ${report.report_card.grade} (${report.report_card.score}/100)`);
+  });
+
 program.command("export")
   .description("Export palette or run artifacts into builder-consumable formats.")
-  .requiredOption("--format <format>", "a-eyes-variant-tokens, agent-brief, or css-vars")
+  .requiredOption("--format <format>", "a-eyes-variant-tokens, a-eyes-intake-variants, agent-brief, or css-vars")
   .requiredOption("--input <path>", "Input palette-run JSON or scrub-md run directory")
   .requiredOption("--out <path>", "Output path")
   .action(async (options) => {
     const format = String(options.format);
     if (format === "a-eyes-variant-tokens") {
       await exportAEyesTokens(resolve(options.input), resolve(options.out));
+    } else if (format === "a-eyes-intake-variants") {
+      await exportAEyesIntakeVariants(resolve(options.input), resolve(options.out));
     } else if (format === "agent-brief") {
       await exportAgentBriefs(resolve(options.input), resolve(options.out));
     } else if (format === "css-vars") {
@@ -168,6 +280,25 @@ program.command("css-vars")
     } else {
       process.stdout.write(css);
     }
+  });
+
+program.command("design-md")
+  .description("Emit Google DESIGN.md spec-compliant output from a RizzFizz palette run.")
+  .requiredOption("--input <dir>", "scrub-md run directory")
+  .requiredOption("--out <dir>", "output directory for DESIGN.md files")
+  .option("--name <name>", "design system name")
+  .option("--description <text>", "design system description")
+  .option("--tech-context <path>", "Whiffler technology-context.json to embed")
+  .action(async (options) => {
+    const paths = await exportDesignMd({
+      input: resolve(options.input),
+      out: resolve(options.out),
+      name: options.name,
+      description: options.description,
+      techContext: options.techContext,
+    });
+    console.log(`Wrote ${paths.length} DESIGN.md files to ${resolve(options.out)}`);
+    for (const p of paths) console.log(`  ${p}`);
   });
 
 program.parseAsync(process.argv).catch((error: unknown) => {

@@ -1,5 +1,6 @@
 import { technologyDirectionForVariant } from "./exports.js";
-import type { BuildContract, LayoutContract, MotionContract, PaletteRun, RawReference, VisualQaContract } from "./types.js";
+import { classifyDesignSystem, designSystemGuidance } from "./design-system-taxonomy.js";
+import type { BuildContract, DesignSystemClassification, LayoutContract, MotionContract, PaletteRun, RawReference, VisualQaContract } from "./types.js";
 import type { TechnologyContext } from "./technology.js";
 
 export function buildBuildContract(options: {
@@ -7,16 +8,19 @@ export function buildBuildContract(options: {
   paletteRun: PaletteRun;
   rawReference: RawReference;
   technologyContext?: TechnologyContext;
+  designClassification?: DesignSystemClassification;
   createdAt?: string;
 }): BuildContract {
   const text = options.scrubbedText;
   const relationship = options.paletteRun.relationship;
+  const designClassification = options.designClassification || classifyDesignSystem({ text, paletteRun: options.paletteRun });
   return {
     schema: "rizzfizz.build-contract.v1",
     created_at: options.createdAt || new Date().toISOString(),
     source_safe: true,
     source_reference_ids: [options.rawReference.source_locator],
     entrypoint: "Use this contract first. Treat raw-reference.json as private and do not forward it to builders.",
+    design_system_classification: designClassification,
     intent: {
       site_type: inferSiteType(text, relationship),
       primary_job: inferPrimaryJob(text, relationship),
@@ -45,7 +49,10 @@ export function buildBuildContract(options: {
       palette_relationship: variant.palette_relationship,
       palette_usage: variant.palette_usage,
       technology_direction: technologyDirectionForVariant(variant),
-      visual_rules: visualRulesForRelationship(variant.strategy)
+      visual_rules: [
+        ...visualRulesForRelationship(variant.strategy),
+        ...designSystemGuidance(designClassification)
+      ]
     }))
   };
 }

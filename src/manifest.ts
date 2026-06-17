@@ -7,6 +7,7 @@ export function buildRunManifest(options: {
   outDir: string;
   paletteRun: PaletteRun;
   technologyContext: boolean;
+  designScore?: boolean;
   createdAt?: string;
 }): RunManifest {
   const outDir = resolve(options.outDir);
@@ -18,6 +19,8 @@ export function buildRunManifest(options: {
       visual_tokens: join(outDir, "visual-tokens.json"),
       palette_run: join(outDir, "palette-run.json"),
       variants_palette: join(outDir, "variants-palette.json"),
+      variants_json: join(outDir, "variants.json"),
+      preview_html: join(outDir, "preview.html"),
       tokens_css: join(outDir, "tokens.css"),
       builder_briefs: join(outDir, "builder-briefs")
     },
@@ -25,7 +28,8 @@ export function buildRunManifest(options: {
       raw_reference: join(outDir, "raw-reference.json")
     },
     optional_artifacts: {
-      technology_context: options.technologyContext ? join(outDir, "technology-context.json") : null
+      technology_context: options.technologyContext ? join(outDir, "technology-context.json") : null,
+      design_score: options.designScore === false ? null : join(outDir, "design-score.json")
     },
     recommended_start: join(outDir, "build-contract.json"),
     variants: options.paletteRun.variants.map((variant) => ({
@@ -50,6 +54,7 @@ export async function inspectRun(inputDir: string): Promise<string> {
     `Recommended start: ${manifest.recommended_start}`,
     `Site type: ${contract.intent.site_type}`,
     `Primary job: ${contract.intent.primary_job}`,
+    `Design system: ${contract.design_system_classification.primary.name} (${contract.design_system_classification.primary.confidence_label})`,
     `Variants: ${manifest.variants.map((item) => item.id).join(", ")}`,
     `Visual token variants: ${visual.variants.length}`,
     `Motion level: ${contract.motion.level}`,

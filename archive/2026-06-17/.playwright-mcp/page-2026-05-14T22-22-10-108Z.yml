@@ -1,0 +1,410 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img [ref=e10]
+          - link [ref=e13] [cursor=pointer]:
+            - /url: /
+        - generic [ref=e14]:
+          - img [ref=e16]
+          - link [ref=e33] [cursor=pointer]:
+            - /url: /
+        - button [ref=e34] [cursor=pointer]:
+          - img [ref=e36]
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - generic [ref=e44]: Contact
+            - generic [ref=e45]:
+              - link "hello@anneboysen.dk" [ref=e46] [cursor=pointer]:
+                - /url: mailto:hello@anneboysen.dk?subject=Contact
+              - link "+45 2049 1350" [ref=e47] [cursor=pointer]:
+                - /url: tel:+4520491350
+          - generic [ref=e48]:
+            - generic [ref=e49]: Press
+            - link "press@anneboysen.dk" [ref=e51] [cursor=pointer]:
+              - /url: mailto:press@anneboysen.dk?subject=Press
+          - generic [ref=e52]:
+            - generic [ref=e53]: Contact
+            - generic [ref=e54]:
+              - link "Instagram" [ref=e55] [cursor=pointer]:
+                - /url: https://www.instagram.com/anneboysendk/
+              - link "Linkedin" [ref=e56] [cursor=pointer]:
+                - /url: https://www.linkedin.com/in/anne-boysen-93a91a5/?originalSubdomain=dk
+        - generic [ref=e57]:
+          - link "Work" [ref=e58] [cursor=pointer]:
+            - /url: /#home-projects
+          - link "About" [ref=e59] [cursor=pointer]:
+            - /url: /about
+          - link "Process" [ref=e60] [cursor=pointer]:
+            - /url: /process
+          - link "Shop" [ref=e61] [cursor=pointer]:
+            - /url: /shop
+    - main [ref=e62]:
+      - generic [ref=e63]:
+        - navigation [ref=e64]:
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - img [ref=e69]
+              - link [ref=e72] [cursor=pointer]:
+                - /url: /
+            - generic [ref=e73]:
+              - img [ref=e75]
+              - link [ref=e92] [cursor=pointer]:
+                - /url: /
+            - button "Menu" [ref=e93] [cursor=pointer]:
+              - generic [ref=e94]: Menu
+        - region [ref=e95]:
+          - generic [ref=e96]:
+            - group [ref=e97]
+            - group [ref=e105]
+            - group [ref=e114]
+            - group [ref=e123]
+            - group "1 of 4" [ref=e132]
+            - group [ref=e140]
+            - group [ref=e149]
+            - group [ref=e158]
+            - group [ref=e167]
+            - group [ref=e175]
+            - group [ref=e184]
+            - group [ref=e193]
+      - generic [ref=e202]:
+        - navigation [ref=e204]:
+          - generic [ref=e206]:
+            - generic [ref=e207]:
+              - img [ref=e209]
+              - link [ref=e212] [cursor=pointer]:
+                - /url: /
+            - generic [ref=e213]:
+              - img [ref=e215]
+              - link [ref=e232] [cursor=pointer]:
+                - /url: /
+            - button "Menu" [ref=e233] [cursor=pointer]:
+              - generic [ref=e234]: Menu
+        - generic [ref=e235]:
+          - generic [ref=e236]:
+            - button "All" [ref=e237] [cursor=pointer]:
+              - generic [ref=e238]: All
+            - button "Collectibles" [ref=e239] [cursor=pointer]:
+              - generic [ref=e240]: Collectibles
+          - list [ref=e244]:
+            - listitem [ref=e245]:
+              - generic [ref=e246]:
+                - link "Tangent Table" [ref=e247] [cursor=pointer]:
+                  - /url: /portfolio-projects/tangent-table
+                  - img "Tangent Table" [ref=e248]
+                - generic [ref=e250]:
+                  - generic [ref=e251]: Tangent Table
+                  - generic [ref=e253]: dk3
+            - listitem [ref=e255]:
+              - generic [ref=e256]:
+                - link "Lituus" [ref=e257] [cursor=pointer]:
+                  - /url: /portfolio-projects/lituus
+                  - img "Lituus"
+                - generic [ref=e259]:
+                  - generic [ref=e260]: Lituus
+                  - generic [ref=e262]: Georg Jensen
+            - listitem [ref=e264]:
+              - generic [ref=e265]:
+                - link "Softie Table" [ref=e266] [cursor=pointer]:
+                  - /url: /portfolio-projects/softie-table
+                  - img "Softie Table" [ref=e267]
+                - generic [ref=e269]:
+                  - generic [ref=e270]: Softie Table
+                  - generic [ref=e272]: Anne Boysen Collectibles
+            - listitem [ref=e274]:
+              - generic [ref=e275]:
+                - link "Toward Modular System" [ref=e276] [cursor=pointer]:
+                  - /url: /portfolio-projects/toward-modular-system
+                  - img "Toward Modular System" [ref=e277]
+                - generic [ref=e279]:
+                  - generic [ref=e280]: Toward Modular System
+                  - generic [ref=e282]: Hightower
+            - listitem [ref=e284]:
+              - generic [ref=e285]:
+                - link "Moonsetter" [ref=e286] [cursor=pointer]:
+                  - /url: /portfolio-projects/moonsetter
+                  - img "Moonsetter" [ref=e287]
+                - generic [ref=e289]:
+                  - generic [ref=e290]: Moonsetter
+                  - generic [ref=e292]: Louis Poulsen
+            - listitem [ref=e294]:
+              - generic [ref=e295]:
+                - link "Intoo" [ref=e296] [cursor=pointer]:
+                  - /url: /portfolio-projects/intoo
+                  - img "Intoo" [ref=e297]
+                - generic [ref=e299]:
+                  - generic [ref=e300]: Intoo
+                  - generic [ref=e302]: Georg Jensen
+            - listitem [ref=e304]:
+              - generic [ref=e305]:
+                - link "FAB Bench" [ref=e306] [cursor=pointer]:
+                  - /url: /portfolio-projects/fab-bench
+                  - img "FAB Bench" [ref=e307]
+                - generic [ref=e309]:
+                  - generic [ref=e310]: FAB Bench
+                  - generic [ref=e312]: Anne Boysen Collectibles
+            - listitem [ref=e314]:
+              - generic [ref=e315]:
+                - link "Merge Bench" [ref=e316] [cursor=pointer]:
+                  - /url: /portfolio-projects/merge-bench-test
+                  - img "Merge Bench" [ref=e317]
+                - generic [ref=e319]:
+                  - generic [ref=e320]: Merge Bench
+                  - generic [ref=e322]: Anne Boysen Collectibles
+            - listitem [ref=e324]:
+              - generic [ref=e325]:
+                - link "Levitate Daybed" [ref=e326] [cursor=pointer]:
+                  - /url: /portfolio-projects/levitate-daybed
+                  - img "Levitate Daybed" [ref=e327]
+                - generic [ref=e329]:
+                  - generic [ref=e330]: Levitate Daybed
+                  - generic [ref=e332]: Anne Boysen Collectibles
+            - listitem [ref=e334]:
+              - generic [ref=e335]:
+                - link "Kvadrat Really Module" [ref=e336] [cursor=pointer]:
+                  - /url: /portfolio-projects/kvadrat-really-module
+                  - img "Kvadrat Really Module" [ref=e337]
+                - generic [ref=e339]:
+                  - generic [ref=e340]: Kvadrat Really Module
+                  - generic [ref=e342]: Kvadrat
+            - listitem [ref=e344]:
+              - generic [ref=e345]:
+                - link "Shuffl Modular Sofa" [ref=e346] [cursor=pointer]:
+                  - /url: /portfolio-projects/shuffl-modular-sofa
+                  - img "Shuffl Modular Sofa" [ref=e347]
+                - generic [ref=e349]:
+                  - generic [ref=e350]: Shuffl Modular Sofa
+                  - generic [ref=e352]: Erik Jørgensen
+            - listitem [ref=e354]:
+              - generic [ref=e355]:
+                - link "Split Side Table" [ref=e356] [cursor=pointer]:
+                  - /url: /portfolio-projects/split-side-table
+                  - img "Split Side Table" [ref=e357]
+                - generic [ref=e359]:
+                  - generic [ref=e360]: Split Side Table
+                  - generic [ref=e362]: One Off
+            - listitem [ref=e364]:
+              - generic [ref=e365]:
+                - link "Ballerina Chair" [ref=e366] [cursor=pointer]:
+                  - /url: /portfolio-projects/ballerina-chair
+                  - img "Ballerina Chair" [ref=e367]
+                - generic [ref=e369]:
+                  - generic [ref=e370]: Ballerina Chair
+                  - generic [ref=e372]: Danmarks næste klassiker
+            - listitem [ref=e374]:
+              - generic [ref=e375]:
+                - link "Inspired by Nature" [ref=e376] [cursor=pointer]:
+                  - /url: /portfolio-projects/inspired-by-nature
+                  - img "Inspired by Nature" [ref=e377]
+                - generic [ref=e379]:
+                  - generic [ref=e380]: Inspired by Nature
+                  - generic [ref=e382]: Ecco
+            - listitem [ref=e384]:
+              - generic [ref=e385]:
+                - link "Ripple Lounge Table" [ref=e386] [cursor=pointer]:
+                  - /url: /portfolio-projects/ripple-lounge-table
+                  - img "Ripple Lounge Table" [ref=e387]
+                - generic [ref=e389]:
+                  - generic [ref=e390]: Ripple Lounge Table
+                  - generic [ref=e392]: Danmarks næste klassiker
+            - listitem [ref=e394]:
+              - generic [ref=e395]:
+                - link "Mr. & Mrs. Klipklap" [ref=e396] [cursor=pointer]:
+                  - /url: /portfolio-projects/mr-mrs-klipklap
+                  - img "Mr. & Mrs. Klipklap" [ref=e397]
+                - generic [ref=e399]:
+                  - generic [ref=e400]: Mr. & Mrs. Klipklap
+                  - generic [ref=e402]: ByKlipKlap
+            - listitem [ref=e404]:
+              - generic [ref=e405]:
+                - link "Willy Lounge Chair" [ref=e406] [cursor=pointer]:
+                  - /url: /portfolio-projects/willy-lounge-chair
+                  - img "Willy Lounge Chair" [ref=e407]
+                - generic [ref=e409]:
+                  - generic [ref=e410]: Willy Lounge Chair
+                  - generic [ref=e412]: Danmarks næste klassiker
+            - listitem [ref=e414]:
+              - generic [ref=e415]:
+                - link "ReUse Hanger" [ref=e416] [cursor=pointer]:
+                  - /url: /portfolio-projects/reuse-hanger
+                  - img "ReUse Hanger" [ref=e417]
+                - generic [ref=e419]:
+                  - generic [ref=e420]: ReUse Hanger
+                  - generic [ref=e422]: Danmarks næste klassiker
+            - listitem [ref=e424]:
+              - generic [ref=e425]:
+                - link "BAR Stabel" [ref=e426] [cursor=pointer]:
+                  - /url: /portfolio-projects/bar-stabel
+                  - img "BAR Stabel"
+                - generic [ref=e428]:
+                  - generic [ref=e429]: BAR Stabel
+                  - generic [ref=e431]: One off
+            - listitem [ref=e433]:
+              - generic [ref=e434]:
+                - link "Absorb Relief" [ref=e435] [cursor=pointer]:
+                  - /url: /portfolio-projects/absorb-relief
+                  - img "Absorb Relief"
+                - generic [ref=e437]:
+                  - generic [ref=e438]: Absorb Relief
+                  - generic [ref=e440]: Anne Boysen Collectibles
+            - listitem [ref=e442]:
+              - generic [ref=e443]:
+                - link "Absorb" [ref=e444] [cursor=pointer]:
+                  - /url: /portfolio-projects/absorb
+                  - img "Absorb"
+                - generic [ref=e446]:
+                  - generic [ref=e447]: Absorb
+                  - generic [ref=e449]: Anne Boysen Collectibles
+            - listitem [ref=e451]:
+              - generic [ref=e452]:
+                - link "One Two Three" [ref=e453] [cursor=pointer]:
+                  - /url: /portfolio-projects/one-two-three
+                  - img "One Two Three"
+                - generic [ref=e455]:
+                  - generic [ref=e456]: One Two Three
+                  - generic [ref=e458]: One Off
+            - listitem [ref=e460]:
+              - generic [ref=e461]:
+                - link "Still" [ref=e462] [cursor=pointer]:
+                  - /url: /portfolio-projects/still
+                  - img "Still"
+                - generic [ref=e464]:
+                  - generic [ref=e465]: Still
+                  - generic [ref=e467]: Menu
+            - listitem [ref=e469]:
+              - generic [ref=e470]:
+                - link "Watch Out" [ref=e471] [cursor=pointer]:
+                  - /url: /portfolio-projects/watch-out
+                  - img "Watch Out"
+                - generic [ref=e473]:
+                  - generic [ref=e474]: Watch Out
+                  - generic [ref=e476]: Applicata
+            - listitem [ref=e478]:
+              - generic [ref=e479]:
+                - link "The Right Mood" [ref=e480] [cursor=pointer]:
+                  - /url: /portfolio-projects/the-right-mood
+                  - img "The Right Mood"
+                - generic [ref=e482]:
+                  - generic [ref=e483]: The Right Mood
+                  - generic [ref=e485]: Erik Jørgensen
+            - listitem [ref=e487]:
+              - generic [ref=e488]:
+                - link "Raw Relief" [ref=e489] [cursor=pointer]:
+                  - /url: /portfolio-projects/raw-relief
+                  - img "Raw Relief"
+                - generic [ref=e491]:
+                  - generic [ref=e492]: Raw Relief
+                  - generic [ref=e494]: Anne Boysen Collectibles
+            - listitem [ref=e496]:
+              - generic [ref=e497]:
+                - link "Funkis Bath" [ref=e498] [cursor=pointer]:
+                  - /url: /portfolio-projects/funkis-bath
+                  - img "Funkis Bath"
+                - generic [ref=e500]:
+                  - generic [ref=e501]: Funkis Bath
+                  - generic [ref=e503]: Private client
+            - listitem [ref=e505]:
+              - generic [ref=e506]:
+                - link "Layer It" [ref=e507] [cursor=pointer]:
+                  - /url: /portfolio-projects/layer-it
+                  - img "Layer It"
+                - generic [ref=e509]:
+                  - generic [ref=e510]: Layer It
+                  - generic [ref=e512]: Bent Hansen Furniture
+            - listitem [ref=e514]:
+              - generic [ref=e515]:
+                - link "Stool" [ref=e516] [cursor=pointer]:
+                  - /url: /portfolio-projects/stool
+                  - img "Stool"
+                - generic [ref=e518]:
+                  - generic [ref=e519]: Stool
+                  - generic [ref=e521]: Bent Hansen Furniture
+            - listitem [ref=e523]:
+              - generic [ref=e524]:
+                - link "Toward Sofa" [ref=e525] [cursor=pointer]:
+                  - /url: /portfolio-projects/toward-sofa
+                  - img "Toward Sofa"
+                - generic [ref=e527]:
+                  - generic [ref=e528]: Toward Sofa
+                  - generic [ref=e530]: Erik Jørgensen
+            - listitem [ref=e532]:
+              - generic [ref=e533]:
+                - link "Arch You" [ref=e534] [cursor=pointer]:
+                  - /url: /portfolio-projects/arch-you
+                  - img "Arch You"
+                - generic [ref=e536]:
+                  - generic [ref=e537]: Arch You
+                  - generic [ref=e539]: Applicata
+            - listitem [ref=e541]:
+              - generic [ref=e542]:
+                - link "Levitate Sofa" [ref=e543] [cursor=pointer]:
+                  - /url: /portfolio-projects/levitate-sofa
+                  - img "Levitate Sofa"
+                - generic [ref=e545]:
+                  - generic [ref=e546]: Levitate Sofa
+                  - generic [ref=e548]: Anne Boysen Collectibles
+            - listitem [ref=e550]:
+              - generic [ref=e551]:
+                - link "Merge Lounge Table" [ref=e552] [cursor=pointer]:
+                  - /url: /portfolio-projects/merge-lounge-table
+                  - img "Merge Lounge Table"
+                - generic [ref=e554]:
+                  - generic [ref=e555]: Merge Lounge Table
+                  - generic [ref=e557]: Anne Boysen Collectibles
+        - generic [ref=e561]:
+          - button "All" [ref=e562] [cursor=pointer]:
+            - generic [ref=e563]: All
+          - button "Collectibles" [ref=e564] [cursor=pointer]:
+            - generic [ref=e565]: Collectibles
+    - contentinfo [ref=e566]:
+      - generic [ref=e568]:
+        - link [ref=e569] [cursor=pointer]:
+          - /url: /
+          - img [ref=e571]
+        - generic [ref=e574]:
+          - generic [ref=e575]:
+            - generic [ref=e576]: Social
+            - generic [ref=e577]:
+              - link "Instagram" [ref=e578] [cursor=pointer]:
+                - /url: https://www.instagram.com/anneboysendk/
+              - link "LinkedIn" [ref=e579] [cursor=pointer]:
+                - /url: https://www.linkedin.com/in/anne-boysen-93a91a5/?originalSubdomain=dk
+          - generic [ref=e580]:
+            - generic [ref=e581]:
+              - generic [ref=e582]: Contact
+              - generic [ref=e583]:
+                - link "hello@anneboysen.dk" [ref=e584] [cursor=pointer]:
+                  - /url: mailto:hello@anneboysen.dk?subject=Contact%20from%20website
+                - link "+45 2049 1350" [ref=e585] [cursor=pointer]:
+                  - /url: tel:+4520491350
+            - generic [ref=e586]:
+              - generic [ref=e587]: Press
+              - link "press@anneboysen.dk" [ref=e589] [cursor=pointer]:
+                - /url: mailto:press@anneboysen.dk?subject=Press
+            - generic [ref=e590]:
+              - generic [ref=e591]: Studio
+              - generic [ref=e592]:
+                - paragraph [ref=e593]:
+                  - text: Marievej 7
+                  - text: DK-4600 Køge
+                  - text: Denmark
+                - paragraph [ref=e594]: "CVR-nr.: 34298025"
+          - generic [ref=e595]:
+            - generic [ref=e596]:
+              - generic [ref=e597]: Privacy policy
+              - paragraph [ref=e598]: No cookies, no tracking, no stored data
+            - generic [ref=e599]:
+              - paragraph [ref=e600]: © 2026 Anne Boysen
+              - paragraph [ref=e601]:
+                - text: Designed by
+                - link "Maryan Ivasyk" [ref=e602] [cursor=pointer]:
+                  - /url: https://www.ivasykmaryan.com/
+                  - generic [ref=e603]: Maryan Ivasyk
+                - text: Development by
+                - link "VS5" [ref=e604] [cursor=pointer]:
+                  - /url: https://vs5.co/
+  - generic:
+    - generic:
+      - img

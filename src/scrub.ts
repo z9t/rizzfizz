@@ -1,11 +1,13 @@
 import { basename, join, resolve } from "node:path";
 import { buildPaletteRun, cssVarsForPalette, normalizeHueFamily, normalizeRelationship } from "./color.js";
 import { buildBuildContract } from "./contract.js";
-import { aEyesVariantTokens, writeAgentBriefs } from "./exports.js";
+import { buildDesignScoreReport } from "./design-score.js";
+import { classifyDesignSystem } from "./design-system-taxonomy.js";
+import { aEyesIntakeVariants, aEyesVariantTokens, writeAgentBriefs } from "./exports.js";
 import { readText, writeJson, writeText } from "./io.js";
 import { buildRunManifest } from "./manifest.js";
 import { buildTechnologyContext, readWhifflerScan, runWhiffler, type TechnologyContext } from "./technology.js";
-import type { PaletteRun, RawReference } from "./types.js";
+import type { DesignSystemClassification, PaletteRun, RawReference } from "./types.js";
 import { buildVisualTokensRun } from "./visual.js";
 
 type ScrubOptions = {
@@ -38,8 +40,13 @@ export async function scrubDesignMarkdown(options: ScrubOptions): Promise<{
     source: sourcePath
   });
   const technologyContext = await maybeBuildTechnologyContext(options);
-  const dna = buildDesignDna(scrubbedText, paletteRun, rawReference);
-  const buildContract = buildBuildContract({ scrubbedText, paletteRun, rawReference, technologyContext });
+  const designClassification = classifyDesignSystem({ text: scrubbedText, paletteRun });
+  const designScore = buildDesignScoreReport({
+    text: scrubbedText,
+    styleText: scrubbedText
+  });
+  const dna = buildDesignDna(scrubbedText, paletteRun, rawReference, designClassification);
+  const buildContract = buildBuildContract({ scrubbedText, paletteRun, rawReference, technologyContext, designClassification });
   const visualTokens = buildVisualTokensRun(paletteRun);
   const runManifest = buildRunManifest({ outDir, paletteRun, technologyContext: Boolean(technologyContext) });
   const neutralMd = buildNeutralDesignMd(scrubbedText, paletteRun);
@@ -64,6 +71,7 @@ export async function scrubDesignMarkdown(options: ScrubOptions): Promise<{
   await writeJson(join(outDir, "raw-reference.json"), rawReference);
   await writeJson(join(outDir, "scrubbed-design-dna.json"), dna);
   await writeJson(join(outDir, "build-contract.json"), buildContract);
+  await writeJson(join(outDir, "design-score.json"), designScore);
   await writeJson(join(outDir, "visual-tokens.json"), visualTokens);
   await writeText(join(outDir, "DESIGN-neutral.md"), neutralMd);
   await Promise.all(paletteRun.variants.map((variant) => (
@@ -72,10 +80,37 @@ export async function scrubDesignMarkdown(options: ScrubOptions): Promise<{
   await writeJson(join(outDir, "design-md-variation-run.json"), variationRun);
   await writeJson(join(outDir, "palette-run.json"), paletteRun);
   await writeText(join(outDir, "tokens.css"), cssVarsForPalette(paletteRun));
-  await writeJson(join(outDir, "variants-palette.json"), aEyesVariantTokens(paletteRun));
+  await writeJson(join(outDir, "variants-palette.json"), aEyesVariantTokens(paletteRun, {
+    designScoreGuidance: designScore.exportable_guidance ? {
+      source: "design-score-report",
+      report_card: designScore.report_card,
+      palette_constraints: designScore.exportable_guidance.json.palette_constraints,
+      archetype_constraints: designScore.exportable_guidance.json.archetype_constraints,
+      combined_guidance: designScore.exportable_guidance.json.combined_guidance,
+      qa_checks: designScore.exportable_guidance.json.qa_checks,
+      do_not_clone: designScore.exportable_guidance.json.do_not_clone
+    } : undefined
+  }));
+  await writeJson(join(outDir, "variants.json"), aEyesIntakeVariants(paletteRun, buildContract, technologyContext, {
+    source: "design-score-report",
+    report_card: designScore.report_card,
+    palette_constraints: designScore.exportable_guidance.json.palette_constraints,
+    archetype_constraints: designScore.exportable_guidance.json.archetype_constraints,
+    combined_guidance: designScore.exportable_guidance.json.combined_guidance,
+    qa_checks: designScore.exportable_guidance.json.qa_checks,
+    do_not_clone: designScore.exportable_guidance.json.do_not_clone
+  }));
   await writeJson(join(outDir, "run-manifest.json"), runManifest);
   if (technologyContext) await writeJson(join(outDir, "technology-context.json"), technologyContext);
-  await writeAgentBriefs(join(outDir, "builder-briefs"), paletteRun, dna, basename(outDir), technologyContext, buildContract);
+  await writeAgentBriefs(join(outDir, "builder-briefs"), paletteRun, dna, basename(outDir), technologyContext, buildContract, {
+    source: "design-score-report",
+    report_card: designScore.report_card,
+    palette_constraints: designScore.exportable_guidance.json.palette_constraints,
+    archetype_constraints: designScore.exportable_guidance.json.archetype_constraints,
+    combined_guidance: designScore.exportable_guidance.json.combined_guidance,
+    qa_checks: designScore.exportable_guidance.json.qa_checks,
+    do_not_clone: designScore.exportable_guidance.json.do_not_clone
+  });
 
   return { outDir, paletteRun };
 }
@@ -135,7 +170,12 @@ export function scrubSourceText(rawText: string, identityTerms: string[]): strin
     .trim();
 }
 
-function buildDesignDna(scrubbedText: string, paletteRun: PaletteRun, rawReference: RawReference): Record<string, unknown> {
+function buildDesignDna(
+  scrubbedText: string,
+  paletteRun: PaletteRun,
+  rawReference: RawReference,
+  designClassification: DesignSystemClassification
+): Record<string, unknown> {
   const firstVariant = paletteRun.variants[0];
   const summary = summarize(scrubbedText);
   return {
@@ -222,6 +262,7 @@ function buildDesignDna(scrubbedText: string, paletteRun: PaletteRun, rawReferen
       }
     },
     design_style: {
+      classification: designClassification,
       aesthetic: {
         mood: inferMood(scrubbedText, firstVariant.palette_relationship.tone),
         visual_metaphor: "source-safe abstract visual system",

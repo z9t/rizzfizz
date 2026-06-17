@@ -1,0 +1,21 @@
+{
+  "name": "GrabGallery",
+  "version": "0.3",
+  "description": "Browses with you — detects detail pages and grabs site URLs automatically.",
+  "manifest_version": 3,
+  "permissions": ["activeTab", "clipboardWrite", "scripting", "storage", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "GrabGallery",
+    "default_popup": "popup.html"
+  },
+  "icons": {},
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["recorder.js"],
+    "run_at": "document_start"
+  }]
+}
