@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { chmod, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import test from "node:test";
@@ -9,6 +9,7 @@ import test from "node:test";
 const execFileAsync = promisify(execFile);
 const cli = new URL("../bin/cli.js", import.meta.url).pathname;
 const fixture = new URL("./fixtures/DESIGN-source.md", import.meta.url).pathname;
+const opaqueLocator = /^design-md:|^brief-weaver:/;
 const aEyesSampleRunner = new URL("../scripts/run-aeyes-intake-sample.mjs", import.meta.url).pathname;
 const waffleFixture = new URL("./fixtures/waffle-scan.json", import.meta.url).pathname;
 const weakWhifflerFixture = new URL("./fixtures/whiffler-weak-scan.json", import.meta.url).pathname;
@@ -88,6 +89,69 @@ test("scrub-md writes private and builder-facing artifacts without source identi
     assert.ok(intakeVariants.variants[0].technology_direction.stack);
     assert.ok(intakeVariants.variants[0].technology_direction.animation.library);
     assert.ok(intakeVariants.variants[0].motion_direction);
+
+    const paletteRun = JSON.parse(await readFile(join(dir, "palette-run.json"), "utf8"));
+    const dnaJson = JSON.parse(dna);
+    const variationRun = JSON.parse(await readFile(join(dir, "design-md-variation-run.json"), "utf8"));
+    const builderFacing = [
+      await readFile(join(dir, "palette-run.json"), "utf8"),
+      await readFile(join(dir, "build-contract.json"), "utf8"),
+      dna,
+      await readFile(join(dir, "variants-palette.json"), "utf8"),
+      await readFile(join(dir, "visual-tokens.json"), "utf8"),
+      await readFile(join(dir, "design-md-variation-run.json"), "utf8")
+    ];
+    for (const body of builderFacing) {
+      assert.equal(body.includes("/Users/"), false);
+      assert.equal(body.includes(resolve(fixture)), false);
+    }
+    assert.match(paletteRun.source, opaqueLocator);
+    assert.ok(contract.source_reference_ids.every((id) => opaqueLocator.test(id)));
+    assert.ok(dnaJson.source_reference_ids.every((id) => opaqueLocator.test(id)));
+    assert.match(variants.source_palette_run, opaqueLocator);
+    assert.match(visualTokens.source_palette_run, opaqueLocator);
+    assert.match(variationRun.source_design_md, opaqueLocator);
+    assert.equal(raw.provenance.local_source_path, resolve(fixture));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("design-md embeds scrubbed overview and tech-context summary without absolute paths", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "rizzfizz-test-"));
+  try {
+    await execFileAsync("node", [
+      cli,
+      "scrub-md",
+      "--input",
+      fixture,
+      "--variants",
+      "1",
+      "--tech-scan",
+      waffleFixture,
+      "--out",
+      dir
+    ]);
+    const out = join(dir, "design-md-out");
+    await execFileAsync("node", [
+      cli,
+      "design-md",
+      "--input",
+      dir,
+      "--out",
+      out,
+      "--tech-context",
+      join(dir, "technology-context.json")
+    ]);
+    const md = await readFile(join(out, "DESIGN.md"), "utf8");
+    const overview = md.split("## Overview")[1]?.split("## ")[0] || "";
+    assert.match(md, /## Technology Context/i);
+    assert.ok(overview.trim().length > 0);
+    assert.equal(/is a design system with a .+ tone and .+ accent usage/.test(overview.trim()), false);
+    assert.match(overview, /image-first hierarchy|cinematic|calm|Source-Safe|palette relationship/i);
+    assert.match(md, /Stack fit|Do not clone|Detected/i);
+    assert.equal(md.includes(join(dir, "technology-context.json")), false);
+    assert.equal(md.includes("/Users/"), false);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

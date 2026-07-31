@@ -6,11 +6,11 @@ import { importBriefWeaverRun } from "./brief-weaver.js";
 import { formatCommand, sendPidgeHandoff } from "./pidge.js";
 import { buildPaletteRun, cssVarsForPalette, normalizeHueFamily, normalizeRelationship, parseHexToOklch } from "./color.js";
 import { exportAEyesIntakeVariants, exportAEyesTokens, exportAgentBriefs, exportCssVars } from "./exports.js";
-import { readText, writeJson, writeText } from "./io.js";
+import { readJson, readText, writeJson, writeText } from "./io.js";
 import { inspectRun } from "./manifest.js";
 import { writePreview } from "./preview.js";
 import { scrubDesignMarkdown } from "./scrub.js";
-import { buildTechnologyContext, readWhifflerScan, runWhiffler } from "./technology.js";
+import { buildTechnologyContext, readWhifflerScan, runWhiffler, type TechnologyContext } from "./technology.js";
 import { exportDesignMd } from "./designmd.js";
 import { classifyDesignArchetype, designArchetypeVariantGuidance } from "./design-system-taxonomy.js";
 import { buildDesignScoreReport } from "./design-score.js";
@@ -290,12 +290,15 @@ program.command("design-md")
   .option("--description <text>", "design system description")
   .option("--tech-context <path>", "Whiffler technology-context.json to embed")
   .action(async (options) => {
+    const techContext = options.techContext
+      ? formatTechnologyContextMarkdown(await loadTechnologyContext(resolve(options.techContext)))
+      : undefined;
     const paths = await exportDesignMd({
       input: resolve(options.input),
       out: resolve(options.out),
       name: options.name,
       description: options.description,
-      techContext: options.techContext,
+      techContext,
     });
     console.log(`Wrote ${paths.length} DESIGN.md files to ${resolve(options.out)}`);
     for (const p of paths) console.log(`  ${p}`);
@@ -313,4 +316,45 @@ function parsePositiveInt(value: string): number {
     throw new Error(`Expected positive integer, got ${value}`);
   }
   return parsed;
+}
+
+async function loadTechnologyContext(path: string): Promise<TechnologyContext> {
+  const value = await readJson<Record<string, unknown>>(path);
+  if (!value || typeof value !== "object") {
+    throw new Error(`Invalid technology context at ${path}: expected a JSON object`);
+  }
+  const schemaOk = value.schema === "rizzfizz.technology-context.v2";
+  const sourceSafeOk = value.source_safe === true && value.recommendations != null;
+  if (!schemaOk && !sourceSafeOk) {
+    throw new Error(
+      `Invalid technology context at ${path}: expected schema "rizzfizz.technology-context.v2" (or source_safe with recommendations)`
+    );
+  }
+  return value as TechnologyContext;
+}
+
+function formatTechnologyContextMarkdown(context: TechnologyContext): string {
+  const recommendations = context.recommendations || {
+    detected_stack_summary: "",
+    builder_use: [],
+    cautions: [],
+    stack_fit: "",
+    do_not_clone: []
+  };
+  const detected = (context.detected || []).slice(0, 8).map((tech) => tech.name).filter(Boolean);
+  const lines = [
+    `**Stack fit:** ${recommendations.stack_fit || "unspecified"}`,
+    ""
+  ];
+  if (recommendations.detected_stack_summary) {
+    lines.push(recommendations.detected_stack_summary, "");
+  }
+  if (detected.length > 0) {
+    lines.push("**Detected (top):**", ...detected.map((name) => `- ${name}`), "");
+  }
+  const doNotClone = recommendations.do_not_clone || [];
+  if (doNotClone.length > 0) {
+    lines.push("**Do not clone:**", ...doNotClone.slice(0, 6).map((item) => `- ${item}`));
+  }
+  return lines.join("\n").trim();
 }
