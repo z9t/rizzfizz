@@ -6,6 +6,7 @@ import { classifyDesignSystem } from "./design-system-taxonomy.js";
 import { aEyesIntakeVariants, aEyesVariantTokens, writeAgentBriefs } from "./exports.js";
 import { readText, writeJson, writeText } from "./io.js";
 import { buildRunManifest } from "./manifest.js";
+import { sourceSafeDesignMdLocator } from "./source-locator.js";
 import { buildTechnologyContext, readWhifflerScan, runWhiffler, type TechnologyContext } from "./technology.js";
 import type { DesignSystemClassification, PaletteRun, RawReference } from "./types.js";
 import { buildVisualTokensRun } from "./visual.js";
@@ -28,6 +29,7 @@ export async function scrubDesignMarkdown(options: ScrubOptions): Promise<{
 }> {
   const sourcePath = resolve(options.input);
   const outDir = resolve(options.out);
+  const safeSource = sourceSafeDesignMdLocator(sourcePath);
   const rawText = await readText(sourcePath);
   const rawReference = buildRawReference(sourcePath, rawText);
   const scrubbedText = scrubSourceText(rawText, rawReference.extracted.possible_identity_terms);
@@ -37,7 +39,7 @@ export async function scrubDesignMarkdown(options: ScrubOptions): Promise<{
     relationship,
     hue,
     variants: options.variants,
-    source: sourcePath
+    source: safeSource
   });
   const technologyContext = await maybeBuildTechnologyContext(options);
   const designClassification = classifyDesignSystem({ text: scrubbedText, paletteRun });
@@ -52,7 +54,7 @@ export async function scrubDesignMarkdown(options: ScrubOptions): Promise<{
   const neutralMd = buildNeutralDesignMd(scrubbedText, paletteRun);
   const variationRun = {
     schema: "rizzfizz.design-md-variation-run.v1",
-    source_design_md: sourcePath,
+    source_design_md: safeSource,
     identity_scrubbed: true,
     preserved_relationships: [
       paletteRun.variants[0]?.palette_relationship.relationship || relationship,
@@ -135,7 +137,7 @@ export function buildRawReference(sourcePath: string, rawText: string): RawRefer
   return {
     schema: "rizzfizz.raw-reference.v1",
     source_type: "design-md",
-    source_locator: resolve(sourcePath),
+    source_locator: sourceSafeDesignMdLocator(sourcePath),
     captured_at: new Date().toISOString(),
     private_notes: "Private source archive. Do not feed raw_text or source identity into builder-facing briefs.",
     raw_text: rawText,
@@ -147,7 +149,8 @@ export function buildRawReference(sourcePath: string, rawText: string): RawRefer
     },
     provenance: {
       tool: "rizzfizz",
-      command: "scrub-md"
+      command: "scrub-md",
+      local_source_path: resolve(sourcePath)
     }
   };
 }
