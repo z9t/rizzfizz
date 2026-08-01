@@ -1,10 +1,12 @@
 import { mkdir } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
+import { buildPaletteRun } from "./color.js";
 import { buildBuildContract } from "./contract.js";
 import { aEyesIntakeVariants, aEyesVariantTokens, writeAgentBriefs } from "./exports.js";
 import { readJson, readText, writeJson, writeText } from "./io.js";
 import { buildRunManifest } from "./manifest.js";
 import { writePreview } from "./preview.js";
+import { buildRawReference, scrubSourceText } from "./scrub.js";
 import type { BuildContract, ContrastCheck, PaletteRun, PaletteTokens, PaletteVariant, RawReference } from "./types.js";
 import { buildVisualTokensRun } from "./visual.js";
 
@@ -61,19 +63,55 @@ export async function importBriefWeaverRun(options: BriefWeaverImportOptions): P
   const neutralMd = await readText(join(inputDir, "scrubbed", "DESIGN-neutral.md"));
   const briefWeaverVariants = readVariants(await readJson<Record<string, unknown>>(join(inputDir, "variants", "variants.json")));
   const briefWeaverPaletteRun = await readJson<Record<string, unknown>>(join(inputDir, "palettes", "palette-run.json"));
+  const variantMarkdown = new Map<string, string>();
+  for (const variant of briefWeaverVariants) {
+    const id = stringValue(variant.id);
+    if (!id) continue;
+    variantMarkdown.set(id, await readText(join(inputDir, "variants", `DESIGN-${id}.md`)));
+  }
+
+  const identitySeed = [
+    neutralMd,
+    ...briefWeaverVariants.flatMap((variant) => [
+      stringValue(variant.design_direction),
+      stringValue(variant.raw_prompt_summary),
+      stringValue(variant.layout_guidance),
+      stringValue(variant.typography_guidance),
+      stringValue(variant.motion_guidance)
+    ]),
+    ...variantMarkdown.values()
+  ].filter(Boolean).join("\n\n");
+  const identityTerms = buildRawReference(`brief-weaver-${runId}.md`, identitySeed).extracted.possible_identity_terms;
+  const scrub = (value: string): string => scrubSourceText(value, identityTerms);
+  const scrubbedNeutralMd = scrub(neutralMd);
+  const scrubbedVariants = briefWeaverVariants.map((variant) => ({
+    ...variant,
+    design_direction: scrub(stringValue(variant.design_direction)),
+    raw_prompt_summary: scrub(stringValue(variant.raw_prompt_summary)),
+    layout_guidance: scrub(stringValue(variant.layout_guidance)),
+    typography_guidance: scrub(stringValue(variant.typography_guidance)),
+    motion_guidance: scrub(stringValue(variant.motion_guidance)),
+    palette_usage: scrub(stringValue(variant.palette_usage))
+  }));
+  const scrubbedDna = scrubStringLeaves(sourceSafeDna, identityTerms) as Record<string, unknown>;
+  assertSourceSafeImportText([
+    scrubbedNeutralMd,
+    ...scrubbedVariants.map((variant) => stringValue(variant.design_direction)),
+    ...[...variantMarkdown.values()].map((content) => scrub(content))
+  ]);
 
   const paletteRun = mapPaletteRun({
     inputDir,
     runId,
     variationManifest,
     briefWeaverPaletteRun,
-    briefWeaverVariants
+    briefWeaverVariants: scrubbedVariants
   });
   const rawReference = buildBridgeRawReference(inputDir, runId, variationManifest, projectBrief, handoffBrief);
-  const scrubbedText = [neutralMd, ...briefWeaverVariants.map((variant) => stringValue(variant.design_direction))].filter(Boolean).join("\n\n");
+  const scrubbedText = [scrubbedNeutralMd, ...scrubbedVariants.map((variant) => stringValue(variant.design_direction))].filter(Boolean).join("\n\n");
   const buildContract = applyBriefWeaverContractHints(
     buildBuildContract({ scrubbedText, paletteRun, rawReference }),
-    briefWeaverVariants,
+    scrubbedVariants,
     variationManifest
   );
   const visualTokens = buildVisualTokensRun(paletteRun);
@@ -83,13 +121,14 @@ export async function importBriefWeaverRun(options: BriefWeaverImportOptions): P
     technologyContext: false
   });
   const importedDna = {
-    ...sourceSafeDna,
+    ...scrubbedDna,
     imported_from: {
       tool: "brief-weaver",
       run_id: runId,
       source_safe: true,
       copied_private_raw: false,
-      contract: "RIZZFIZZ-IMPORT-CONTRACT.md"
+      contract: "RIZZFIZZ-IMPORT-CONTRACT.md",
+      re_scrubbed_on_import: true
     }
   };
 
@@ -98,15 +137,14 @@ export async function importBriefWeaverRun(options: BriefWeaverImportOptions): P
   await writeJson(join(outDir, "scrubbed-design-dna.json"), importedDna);
   await writeJson(join(outDir, "build-contract.json"), buildContract);
   await writeJson(join(outDir, "visual-tokens.json"), visualTokens);
-  await writeText(join(outDir, "DESIGN-neutral.md"), neutralMd);
+  await writeText(join(outDir, "DESIGN-neutral.md"), scrubbedNeutralMd);
   await Promise.all(paletteRun.variants.map(async (variant) => {
-    const variantPath = join(inputDir, "variants", `DESIGN-${variant.id}.md`);
-    const content = await readText(variantPath);
+    const content = scrub(variantMarkdown.get(variant.id) || "");
     await writeText(join(outDir, `DESIGN-${variant.id}.md`), content);
   }));
   await writeJson(join(outDir, "palette-run.json"), paletteRun);
   await writeJson(join(outDir, "variants-palette.json"), aEyesVariantTokens(paletteRun, {
-    technologyByVariant: technologyByVariant(briefWeaverVariants)
+    technologyByVariant: technologyByVariant(scrubbedVariants)
   }));
   await writeJson(join(outDir, "variants.json"), aEyesIntakeVariants(paletteRun, buildContract));
   await writeJson(join(outDir, "run-manifest.json"), runManifest);
@@ -122,6 +160,24 @@ export async function importBriefWeaverRun(options: BriefWeaverImportOptions): P
     variantIds: paletteRun.variants.map((variant) => variant.id),
     previewPath
   };
+}
+
+function scrubStringLeaves(value: unknown, identityTerms: string[]): unknown {
+  if (typeof value === "string") return scrubSourceText(value, identityTerms);
+  if (Array.isArray(value)) return value.map((item) => scrubStringLeaves(item, identityTerms));
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, item]) => [key, scrubStringLeaves(item, identityTerms)])
+    );
+  }
+  return value;
+}
+
+function assertSourceSafeImportText(chunks: string[]): void {
+  const joined = chunks.join("\n");
+  if (/https?:\/\//i.test(joined) || /\bmailto:/i.test(joined)) {
+    throw new Error("Brief Weaver import failed source-safe verification: URL-like content remained after scrub");
+  }
 }
 
 function readProjectBrief(payload: BriefWeaverProjectBrief, label: string): BriefWeaverProjectBrief {
@@ -151,6 +207,16 @@ function readVariants(payload: Record<string, unknown>): BriefWeaverVariant[] {
   });
 }
 
+function isPaletteIntentDeferred(paletteRun: Record<string, unknown>, palettes: Record<string, unknown>[]): boolean {
+  if (stringValue(paletteRun.deferred_to) === "rizzfizz") return true;
+  if (stringValue(paletteRun.generator) === "palette-intent-deferred-to-rizzfizz") return true;
+  const first = palettes[0] || {};
+  if (stringValue(first.deferred_to) === "rizzfizz") return true;
+  if (stringValue(first.generator) === "palette-intent-deferred-to-rizzfizz") return true;
+  const tokens = recordValue(first.tokens) || {};
+  return Object.keys(tokens).length === 0;
+}
+
 function mapPaletteRun(options: {
   inputDir: string;
   runId: string;
@@ -164,11 +230,42 @@ function mapPaletteRun(options: {
   }
   const firstVariant = options.briefWeaverVariants[0];
   const firstPalette = palettes[0];
+  const hueFamily = stringValue(firstPalette.family)
+    || stringValue(options.briefWeaverPaletteRun.family)
+    || "blue";
+
+  // Brief Weaver contract non-goal: OKLCH generation belongs here. When the
+  // upstream run emits palette *intent* only, regenerate canonical tokens.
+  if (isPaletteIntentDeferred(options.briefWeaverPaletteRun, palettes)) {
+    const relationship = stringValue(firstPalette.relationship_preset)
+      || stringValue(options.briefWeaverPaletteRun.relationship_preset)
+      || strategyForBriefWeaver(firstVariant, options.variationManifest);
+    const generated = buildPaletteRun({
+      relationship,
+      hue: hueFamily,
+      variants: palettes.length,
+      source: `brief-weaver-intent:${options.runId}`
+    });
+    return {
+      ...generated,
+      variants: generated.variants.map((variant, index) => {
+        const bw = options.briefWeaverVariants.find((item) => stringValue(item.id) === stringValue(palettes[index]?.id))
+          || options.briefWeaverVariants[index];
+        return {
+          ...variant,
+          id: stringValue(palettes[index]?.id) || variant.id,
+          name: stringValue(bw?.name) || stringValue(palettes[index]?.name) || variant.name,
+          palette_usage: stringValue(bw?.palette_usage) || variant.palette_usage
+        };
+      })
+    };
+  }
+
   return {
     schema: "rizzfizz.palette-run.v1",
     created_at: new Date().toISOString(),
     relationship: strategyForBriefWeaver(firstVariant, options.variationManifest),
-    hue_family: stringValue(firstPalette.family) || stringValue(options.briefWeaverPaletteRun.family) || "neutral",
+    hue_family: hueFamily === "neutral" ? "blue" : hueFamily,
     source: `brief-weaver:${options.runId}`,
     variants: palettes.map((palette, index) => mapPaletteVariant({
       palette,

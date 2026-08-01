@@ -5,7 +5,7 @@
  * Spec: YAML frontmatter (colors, typography, spacing) + sectioned markdown body.
  */
 
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { readFile } from "node:fs/promises";
 import type { PaletteRun, PaletteTokens, PaletteRelationship } from "./types.js";
 import { paletteRunSchema } from "./schemas.js";
@@ -283,8 +283,10 @@ async function readScrubbedProse(inputDir: string): Promise<string> {
 function displayNameFromSource(source: string | undefined): string {
   if (!source) return "Design System";
   if (source.startsWith("design-md:")) {
-    const stem = source.slice("design-md:".length).replace(/\.[^.]+$/, "");
-    return stem || "Design System";
+    const stem = basename(source.slice("design-md:".length)).replace(/\.[^.]+$/, "");
+    // Reject empty / path-like / URL-like stems (defense-in-depth for hostile locators).
+    if (!stem || /[/\\:]/.test(stem) || stem.includes("..")) return "Design System";
+    return stem;
   }
   if (source.startsWith("/") || source.includes("\\") || source.includes("/")) {
     return "Design System";

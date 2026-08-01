@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { access, mkdir } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { readJson, writeJson } from "./io.js";
 import { paletteRunSchema } from "./schemas.js";
@@ -98,21 +98,22 @@ async function writeHandoffPayload(
   await mkdir(handoffDir, { recursive: true });
   const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..+$/, "Z");
   const payloadPath = join(handoffDir, `payload-${stamp}-${options.to}.json`);
+  const runId = basename(inputDir);
   const payload = {
     schema: "rizzfizz.pidge-handoff.v1",
     task: "Use the attached RizzFizz artifacts to continue, build, review, or provision the selected website design aid flow.",
-    run_dir: inputDir,
+    run_id: runId,
     source: {
       tool: "rizzfizz",
-      palette_run: join(inputDir, "palette-run.json"),
-      variants_palette: join(inputDir, "variants-palette.json"),
-      variants_json: await exists(join(inputDir, "variants.json")) ? join(inputDir, "variants.json") : null,
-      preview_html: await exists(join(inputDir, "preview.html")) ? join(inputDir, "preview.html") : null,
-      scrubbed_design_dna: join(inputDir, "scrubbed-design-dna.json"),
-      build_contract: await exists(join(inputDir, "build-contract.json")) ? join(inputDir, "build-contract.json") : null,
-      visual_tokens: await exists(join(inputDir, "visual-tokens.json")) ? join(inputDir, "visual-tokens.json") : null,
-      run_manifest: await exists(join(inputDir, "run-manifest.json")) ? join(inputDir, "run-manifest.json") : null,
-      technology_context: await exists(join(inputDir, "technology-context.json")) ? join(inputDir, "technology-context.json") : null,
+      palette_run: "palette-run.json",
+      variants_palette: "variants-palette.json",
+      variants_json: await exists(join(inputDir, "variants.json")) ? "variants.json" : null,
+      preview_html: await exists(join(inputDir, "preview.html")) ? "preview.html" : null,
+      scrubbed_design_dna: "scrubbed-design-dna.json",
+      build_contract: await exists(join(inputDir, "build-contract.json")) ? "build-contract.json" : null,
+      visual_tokens: await exists(join(inputDir, "visual-tokens.json")) ? "visual-tokens.json" : null,
+      run_manifest: await exists(join(inputDir, "run-manifest.json")) ? "run-manifest.json" : null,
+      technology_context: await exists(join(inputDir, "technology-context.json")) ? "technology-context.json" : null,
       raw_reference_included: Boolean(options.includeRaw)
     },
     routing: {
@@ -126,8 +127,8 @@ async function writeHandoffPayload(
       name: variant.name,
       relationship: variant.palette_relationship,
       usage: variant.palette_usage,
-      builder_brief: join(inputDir, "builder-briefs", `${variant.id}.md`),
-      design_md: join(inputDir, `DESIGN-${variant.id}.md`),
+      builder_brief: `builder-briefs/${variant.id}.md`,
+      design_md: `DESIGN-${variant.id}.md`,
       tokens: variant.tokens,
       checks: variant.checks
     })),

@@ -89,9 +89,43 @@ export type TechnologyEvidenceSummary = {
   status?: number;
 };
 
-const DEFAULT_WHIFFLER = "/Users/max/Documents/Code/whiffler/src/cli/whiffler.js";
+const LEGACY_WHIFFLER = "/Users/max/Documents/Code/whiffler/src/cli/whiffler.js";
 const DETECTED_CONFIDENCE_THRESHOLD = 30;
 const STRONG_EVIDENCE_LIMIT = 3;
+
+export function assertHttpUrl(url: string): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error(`tech URL must be http(s), got invalid URL: ${url}`);
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error(`tech URL must be http(s), got ${parsed.protocol}`);
+  }
+  return url;
+}
+
+export async function resolveWhifflerExecutable(explicit?: string): Promise<string> {
+  if (explicit) {
+    await access(explicit);
+    return explicit;
+  }
+  const env = (process as unknown as { env?: Record<string, string | undefined> }).env || {};
+  const fromEnv = env.RIFF_WHIF_BIN || env.WHIFFLER_BIN;
+  if (fromEnv) {
+    await access(fromEnv);
+    return fromEnv;
+  }
+  try {
+    await access(LEGACY_WHIFFLER);
+    return LEGACY_WHIFFLER;
+  } catch {
+    throw new Error(
+      "Whiffler CLI not found. Pass --whiffler <path-to-whiffler.js> or set RIFF_WHIF_BIN to the Whiffler JS entrypoint."
+    );
+  }
+}
 
 export async function runWhiffler(options: {
   url: string;
@@ -99,8 +133,8 @@ export async function runWhiffler(options: {
   timeout?: number;
   executable?: string;
 }): Promise<WaffleScan> {
-  const executable = options.executable || DEFAULT_WHIFFLER;
-  await access(executable);
+  assertHttpUrl(options.url);
+  const executable = await resolveWhifflerExecutable(options.executable);
   const args = [executable, "--json"];
   if (options.aggressive) args.push("--aggressive");
   if (options.timeout) args.push("--timeout", String(options.timeout));

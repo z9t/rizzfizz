@@ -1,0 +1,16 @@
+{
+  "run_id": "brief-weaver-leaky",
+  "domain": "photography portfolio",
+  "variant_count": 1,
+  "locked_traits": [
+    "image_first_hierarchy"
+  ],
+  "varied_traits": [
+    "palette"
+  ],
+  "outputs": {
+    "neutral": "scrubbed/DESIGN-neutral.md",
+    "variants_json": "variants/variants.json",
+    "palette_run": "palettes/palette-run.json"
+  }
+}

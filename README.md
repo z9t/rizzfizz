@@ -22,6 +22,16 @@ node bin/cli.js --help
 
 ```sh
 rizzfizz scrub-md --input ./DESIGN-source.md --variants 4 --out ./runs/example
+rizzfizz scrub-md --input ./DESIGN-source.md --out ./runs/scrub-only --skip-palette   # identity scrub, no colour generation
+rizzfizz read --input ./runs/example                    # read-only summary (no generation)
+rizzfizz read --input ./palette-run.json
+rizzfizz colors --search "ocean blue"                   # 32k+ open colour names (not Pantone)
+rizzfizz riff "orange, dark blue grey, 3, +3" --out ./riff.json
+rizzfizz --riff "blue green, 3, +5" --seed demo --out ./riff.json
+rizzfizz riff "~blue(+10), 3, +3"
+rizzfizz riff "~yellow sun(20), orange"
+rizzfizz riff "~ALL(-35,-20,-10), orange, 2, +3"
+rizzfizz reriff --input ./riff.json --lock '#03719C' --spec "1, +2" --out ./reriff.json
 rizzfizz palette --relationship dark-sparse-accent --hue blue --variants 4 --out ./palette-run.json
 rizzfizz export --format a-eyes-variant-tokens --input ./palette-run.json --out ./variants-palette.json
 rizzfizz export --format a-eyes-intake-variants --input ./runs/example --out ./runs/example/variants.json
@@ -34,6 +44,29 @@ rizzfizz inspect --input ./runs/example
 rizzfizz preview --input ./runs/example --out ./runs/example/preview.html
 rizzfizz handoff --input ./runs/example --to gemma --variant variant-1 --expects-response
 ```
+
+## Riff / reriff
+
+`riff` builds palette **versions** from locked colour-name dictionary entries (CSS + XKCD survey + meodai/color-names MIT corpus — **not Pantone**), optional generated companions, and spectrum variance:
+
+| Spec | Meaning |
+|---|---|
+| `blue` | Lock `blue`; default companions + 1 version |
+| `blue green, 3, +5` | Lock multi-word `blue green`, generate 3 more (4 total), 5 versions |
+| `orange, dark blue grey, 3, +3` | Lock two colours, generate 3, 3 versions |
+| `~blue(+10), 3, +3` | Lock blue; vary **up** the hue spectrum up to 10% toward the next named neighbour |
+| `~yellow sun(20), orange` | ±20% around `yellow sun`, also lock `orange` |
+| `~grey green(-23, +10)` | Asymmetric minus/plus variance |
+| `~ALL(10)` | ±10% on a randomly chosen colour each version |
+| `~ALL(-35,-20,-10)` | Per-version range list; one random colour rolled inside each range |
+
+Stderr always prints `FLAG` / `WARN` lines (seed, rolls, neighbour-overshoot warnings, `reriff_hint`) before JSON. Use those hex/oklch values with:
+
+```sh
+rizzfizz reriff --input ./riff.json --lock '#HEX' --lock 'ocean blue' --spec "2, +3"
+```
+
+`--lock` wins over contradictory trailing-spec locks (first / closest to the start of the command).
 
 ## Canonical a-eyes Intake Sample
 

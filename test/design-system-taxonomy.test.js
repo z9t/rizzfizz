@@ -154,4 +154,15 @@ test("classifier source evidence is sanitized", () => {
   assert.equal(evidence.includes("https://example.test"), false);
   assert.equal(evidence.includes("Linear"), false);
   assert.equal(evidence.includes("Apple"), false);
+  assert.ok(result.source_safe_evidence.every((item) => /^(term|quality):/.test(item)));
+});
+
+test("classifier source evidence never copies distinctive source slogans", () => {
+  const slogan = "ZEPHYR_CALM_CINEMATIC_SLOGAN_9f3a";
+  const result = classifyDesignSystem({
+    text: `${slogan} spacious gallery with calm premium hierarchy and restrained motion.`,
+    relationship: "gallery-neutral"
+  });
+  assert.equal(result.source_safe_evidence.join(" ").includes(slogan), false);
+  assert.ok(result.source_safe_evidence.every((item) => /^(term|quality):/.test(item)));
 });

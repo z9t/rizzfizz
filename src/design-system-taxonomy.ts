@@ -562,7 +562,7 @@ export function classifyDesignSystem(input: {
     primary: toMatch(primary, confidenceForScore(primary.score)),
     secondary,
     matched_qualities: matchedQualities.length ? matchedQualities : ["palette relationship", "general source-safe layout direction"],
-    source_safe_evidence: evidenceSnippets(text, primary.matched_terms)
+    source_safe_evidence: abstractEvidence(primary.matched_terms, matchedQualities)
   };
 }
 
@@ -652,24 +652,11 @@ function qualityLabels(primary: string[], secondary: string[]): string[] {
   return unique([...primary, ...secondary].map((category) => labels[category] || category));
 }
 
-function evidenceSnippets(text: string, matchedTerms: string[]): string[] {
-  const terms = matchedTerms.filter((term) => term.length > 2);
-  const sentences = text
-    .replace(/\s+/g, " ")
-    .split(/(?<=[.!?])\s+|\n+/)
-    .map((sentence) => sourceSafeSnippet(sentence.trim()))
-    .filter(Boolean);
-  const matched = sentences.filter((sentence) => terms.some((term) => normalizeText(sentence).includes(normalizeText(term))));
-  return unique((matched.length ? matched : sentences).slice(0, 3)).map((sentence) => (
-    sentence.length > 180 ? `${sentence.slice(0, 177).trim()}...` : sentence
-  ));
-}
-
-function sourceSafeSnippet(value: string): string {
-  return value
-    .replace(/https?:\/\/[^\s)>\]]+/g, "[source URL removed]")
-    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[email removed]")
-    .replace(/\b(?:Linear|Apple|Stripe|Notion)\b/g, "[calibration reference removed]");
+function abstractEvidence(matchedTerms: string[], qualityCats: string[]): string[] {
+  // matched_terms are taxonomy keywords / palette relationships only (never free-form source nouns).
+  const termLabels = matchedTerms.filter((term) => term.length > 2).slice(0, 8).map((term) => `term:${term}`);
+  const qualityLabels = qualityCats.slice(0, 5).map((category) => `quality:${category}`);
+  return unique([...termLabels, ...qualityLabels]).slice(0, 12);
 }
 
 function toArchetypeMatch(

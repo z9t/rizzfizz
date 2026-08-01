@@ -1,0 +1,30 @@
+{
+  "family": "blue",
+  "generator": "deterministic_hue_family_shift",
+  "palettes": [
+    {
+      "id": "variant-1",
+      "name": "bounded blue dark shift",
+      "family": "blue",
+      "hue": 196,
+      "mode": "dark",
+      "contrast_checks": {
+        "text_on_background": 17.9,
+        "text_on_surface": 14.5,
+        "muted_text_on_background": 9.8,
+        "primary_on_background": 15.6,
+        "accent_on_background": 6.5,
+        "accent_on_surface": 5.3
+      },
+      "tokens": {
+        "background": "#071114",
+        "surface": "#13272d",
+        "text": "#f2f9fa",
+        "muted_text": "#a1bfc7",
+        "primary": "#d6ecf5",
+        "accent": "#479af7",
+        "border": "#2a4952"
+      }
+    }
+  ]
+}

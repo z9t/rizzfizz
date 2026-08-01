@@ -7,7 +7,9 @@ and designlang on each with 1.5–6s random delay. Writes results to JSONL.
 import sys, json, subprocess, random, time, os
 from pathlib import Path
 
-SCORER = Path(__file__).resolve().parent.parent.parent / "design-quality-scorer/score.py"
+# Prefer the utilities entry (canonical); fall back to score.py beside siblings.
+_UTIL = Path("/Users/max/Documents/Code/utilities/scripts/design-quality-score")
+_FALLBACK = Path(__file__).resolve().parent.parent.parent / "design-quality-scorer/score.py"
 OUT_DIR = Path.home() / ".gallery-scans"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -23,6 +25,11 @@ def resolve_url(url: str) -> str:
     except Exception:
         return url
 
+def scorer_cmd(resolved: str) -> list[str]:
+    if _UTIL.exists():
+        return [str(_UTIL), "--url", resolved, "--json"]
+    return [sys.executable, str(_FALLBACK), "--url", resolved, "--json"]
+
 def score_url(url: str) -> dict | None:
     """Run design quality scorer against a URL."""
     resolved = resolve_url(url)
@@ -30,7 +37,7 @@ def score_url(url: str) -> dict | None:
         print(f"  → resolved to {resolved}")
     try:
         result = subprocess.run(
-            [sys.executable, str(SCORER), "--url", resolved, "--json"],
+            scorer_cmd(resolved),
             capture_output=True, text=True, timeout=45
         )
         if result.returncode == 0 and result.stdout.strip():

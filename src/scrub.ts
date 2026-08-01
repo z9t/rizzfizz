@@ -21,11 +21,13 @@ type ScrubOptions = {
   techUrl?: string;
   whiffler?: string;
   aggressiveTechScan?: boolean;
+  /** When true, scrub identity only — do not generate palette variants. */
+  noPalette?: boolean;
 };
 
 export async function scrubDesignMarkdown(options: ScrubOptions): Promise<{
   outDir: string;
-  paletteRun: PaletteRun;
+  paletteRun: PaletteRun | null;
 }> {
   const sourcePath = resolve(options.input);
   const outDir = resolve(options.out);
@@ -33,6 +35,32 @@ export async function scrubDesignMarkdown(options: ScrubOptions): Promise<{
   const rawText = await readText(sourcePath);
   const rawReference = buildRawReference(sourcePath, rawText);
   const scrubbedText = scrubSourceText(rawText, rawReference.extracted.possible_identity_terms);
+
+  if (options.noPalette) {
+    await writeJson(join(outDir, "raw-reference.json"), rawReference);
+    await writeText(join(outDir, "DESIGN-neutral.md"), scrubbedText);
+    await writeJson(join(outDir, "scrubbed-design-dna.json"), {
+      schema: "rizzfizz.design-dna.v1",
+      source_safe: true,
+      source: safeSource,
+      mode: "read-scrub-no-palette",
+      scrubbed_text_excerpt: scrubbedText.slice(0, 2000),
+      note: "Palette generation skipped (--no-palette). Use `rizzfizz riff` or `rizzfizz palette` to create colours."
+    });
+    await writeJson(join(outDir, "run-manifest.json"), {
+      schema: "rizzfizz.run-manifest.v1",
+      created_at: new Date().toISOString(),
+      mode: "no-palette",
+      source_safe_entrypoints: {
+        design_neutral: join(outDir, "DESIGN-neutral.md"),
+        scrubbed_design_dna: join(outDir, "scrubbed-design-dna.json")
+      },
+      private_artifacts: { raw_reference: join(outDir, "raw-reference.json") },
+      variants: []
+    });
+    return { outDir, paletteRun: null };
+  }
+
   const relationship = normalizeRelationship(options.relationship || inferRelationship(rawText));
   const hue = normalizeHueFamily(options.hue || inferHue(rawText));
   const paletteRun = buildPaletteRun({
@@ -133,7 +161,10 @@ export function buildRawReference(sourcePath: string, rawText: string): RawRefer
   const urls = unique(rawText.match(/https?:\/\/[^\s)>\]]+/g) || []);
   const hexColors = unique(rawText.match(/#[0-9a-fA-F]{6}\b/g) || []).map((value) => value.toUpperCase());
   const possibleFonts = extractFontHints(rawText);
-  const identityTerms = extractIdentityTerms(sourcePath, rawText, urls);
+  const identityTerms = unique([
+    ...extractIdentityTerms(sourcePath, rawText, urls),
+    ...sanitizeFontIdentityTerms(possibleFonts)
+  ]);
   return {
     schema: "rizzfizz.raw-reference.v1",
     source_type: "design-md",
@@ -158,13 +189,27 @@ export function buildRawReference(sourcePath: string, rawText: string): RawRefer
 export function scrubSourceText(rawText: string, identityTerms: string[]): string {
   let text = rawText
     .replace(/https?:\/\/[^\s)>\]]+/g, "[source URL removed]")
+    .replace(/\bfile:\/\/[^\s)>\]]+/gi, "[source path removed]")
+    .replace(/(?:^|[\s("'`])(?:\/(?:Users|home)\/[^\s)>\]]+|~\/[^\s)>\]]+)/g, (match) => {
+      const prefix = /^[\s("'`]/.test(match[0]) ? match[0] : "";
+      return `${prefix}[source path removed]`;
+    })
+    .replace(/\bmailto:[^\s)>\]]+/gi, "[email removed]")
     .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[email removed]")
-    .replace(/\b(?:recreate|clone|copy exactly|copy this|pixel-perfect copy|duplicate)\b/gi, "draw inspiration from");
+    .replace(/\+?\d[\d\s().-]{7,}\d/g, "[phone removed]")
+    .replace(/(?<![\w-])@[A-Za-z][A-Za-z0-9_]{2,}\b/g, "[handle removed]")
+    .replace(/\b(?:recreate|clone|copy exactly|copy this|pixel-perfect copy|duplicate|mirror this site)\b/gi, "draw inspiration from");
 
   for (const term of identityTerms) {
     if (term.length < 3) continue;
     const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    text = text.replace(new RegExp(`\\b${escaped}\\b`, "gi"), "[source identity removed]");
+    text = text.replace(new RegExp(`\\b${escaped}\\b`, "gi"), (match, offset, full) => {
+      const before = full.slice(0, offset);
+      const open = before.lastIndexOf("[");
+      const close = before.lastIndexOf("]");
+      if (open > close) return match; // already inside a redaction placeholder
+      return "[source identity removed]";
+    });
   }
 
   return text
@@ -180,12 +225,21 @@ function buildDesignDna(
   designClassification: DesignSystemClassification
 ): Record<string, unknown> {
   const firstVariant = paletteRun.variants[0];
-  const summary = summarize(scrubbedText);
+  const summary = buildAbstractBuilderSummary({
+    scrubbedText,
+    relationship: paletteRun.relationship,
+    tone: firstVariant?.palette_relationship.tone || "premium"
+  });
   return {
     schema: "rizzfizz.design-dna.v1",
     source_reference_ids: [rawReference.source_locator],
     identity_scrubbed: true,
     builder_summary: summary,
+    traits: {
+      density: inferDensity(scrubbedText),
+      whitespace: inferWhitespace(scrubbedText),
+      mood: inferMood(scrubbedText, firstVariant?.palette_relationship.tone || "premium")
+    },
     avoid_copying: [
       "Do not use source brand names, URLs, category names, distinctive copy, or clone language.",
       "Preserve abstract relationships only: palette, density, hierarchy, motion feel, and interaction principles."
@@ -324,20 +378,22 @@ function buildDesignDna(
 }
 
 function buildNeutralDesignMd(scrubbedText: string, paletteRun: PaletteRun): string {
+  const first = paletteRun.variants[0];
+  const tone = first?.palette_relationship.tone || "premium";
+  const mood = inferMood(scrubbedText, tone).join(", ");
   return `# Source-Safe Design Direction
 
-${summarize(scrubbedText)}
+${buildAbstractBuilderSummary({ scrubbedText, relationship: paletteRun.relationship, tone })}
 
 ## Preserved Abstract Traits
 
-- Palette relationship: ${paletteRun.variants[0]?.palette_relationship.relationship}
+- Palette relationship: ${first?.palette_relationship.relationship}
+- Density: ${inferDensity(scrubbedText)}
+- Whitespace: ${inferWhitespace(scrubbedText)}
+- Mood: ${mood}
 - Typography relationship: preserve hierarchy and role, not proprietary font identity.
 - Layout: preserve density, hierarchy, and interaction feel without source-specific copying.
 - Motion: restrained, responsive, and reduced-motion aware.
-
-## Source-Safe Notes
-
-${scrubbedText}
 `;
 }
 
@@ -346,7 +402,11 @@ function buildVariantDesignMd(scrubbedText: string, variant: PaletteRun["variant
 
 ## Builder Direction
 
-${summarize(scrubbedText)}
+${buildAbstractBuilderSummary({
+    scrubbedText,
+    relationship: variant.palette_relationship.relationship,
+    tone: variant.palette_relationship.tone
+  })}
 
 Use this variant's palette and relationship rather than choosing colors from scratch.
 
@@ -391,10 +451,28 @@ function extractFontHints(rawText: string): string[] {
     if (!/(font|typeface|typography)/i.test(line)) continue;
     const quoted = line.match(/["'`](.+?)["'`]/g) || [];
     for (const item of quoted) hints.add(item.replace(/^["'`]|["'`]$/g, ""));
-    const afterColon = line.split(":").slice(1).join(":").trim();
-    if (afterColon) hints.add(afterColon.slice(0, 120));
+    if (quoted.length === 0) {
+      const afterColon = line.split(":").slice(1).join(":").trim();
+      if (afterColon) hints.add(afterColon.slice(0, 120));
+    }
   }
   return [...hints].filter(Boolean);
+}
+
+const GENERIC_FONT_TOKENS = new Set([
+  "sans", "serif", "display", "font", "typeface", "typography", "heading", "body", "mono", "regular", "bold", "medium", "light"
+]);
+
+function sanitizeFontIdentityTerms(fonts: string[]): string[] {
+  const terms = new Set<string>();
+  for (const font of fonts) {
+    for (const token of font.split(/[^a-zA-Z0-9]+/)) {
+      if (token.length < 3) continue;
+      if (GENERIC_FONT_TOKENS.has(token.toLowerCase())) continue;
+      terms.add(token);
+    }
+  }
+  return [...terms];
 }
 
 function extractIdentityTerms(sourcePath: string, rawText: string, urls: string[]): string[] {
@@ -413,16 +491,21 @@ function extractIdentityTerms(sourcePath: string, rawText: string, urls: string[
       // Ignore malformed URLs captured by the broad regex.
     }
   }
-  for (const line of rawText.split("\n").slice(0, 25)) {
-    const heading = line.match(/^#\s+(.+)/);
-    if (heading) {
-      for (const token of heading[1].split(/[^a-zA-Z0-9]+/)) {
-        if (token.length >= 4) terms.add(token);
+  const lines = rawText.split("\n");
+  for (const [index, line] of lines.entries()) {
+    if (index < 25) {
+      const heading = line.match(/^#\s+(.+)/);
+      if (heading) {
+        for (const token of heading[1].split(/[^a-zA-Z0-9]+/)) {
+          if (token.length >= 4) terms.add(token);
+        }
       }
     }
     const labeled = line.match(/^(?:brand|client|source|site|company|project)\s*:\s*(.+)$/i);
     if (labeled) {
-      for (const token of labeled[1].split(/[^a-zA-Z0-9]+/)) {
+      const value = labeled[1].trim();
+      if (value.length >= 3) terms.add(value);
+      for (const token of value.split(/[^a-zA-Z0-9]+/)) {
         if (token.length >= 3) terms.add(token);
       }
     }
@@ -430,15 +513,35 @@ function extractIdentityTerms(sourcePath: string, rawText: string, urls: string[
   return [...terms].sort((a, b) => b.length - a.length);
 }
 
-function summarize(text: string): string {
-  const plain = text
-    .replace(/^#+\s+/gm, "")
-    .replace(/```[\s\S]*?```/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!plain) return "Premium source-safe website direction with disciplined palette, typography, layout, and motion guidance.";
-  return plain.length > 520 ? `${plain.slice(0, 517).trim()}...` : plain;
+function buildAbstractBuilderSummary(input: {
+  scrubbedText: string;
+  relationship: string;
+  tone: string;
+}): string {
+  const density = inferDensity(input.scrubbedText);
+  const whitespace = inferWhitespace(input.scrubbedText);
+  const moods = inferMood(input.scrubbedText, input.tone);
+  const moodPhrase = moods.slice(0, 3).join(", ");
+  const densityPhrase = DENSITY_PHRASES[density] || DENSITY_PHRASES.moderate;
+  const whitespacePhrase = WHITESPACE_PHRASES[whitespace] || WHITESPACE_PHRASES.balanced;
+  return [
+    `Source-safe ${input.relationship} direction with ${moodPhrase} mood.`,
+    `${densityPhrase} Prefer ${whitespacePhrase}.`,
+    "Preserve palette roles, hierarchy, and restrained motion without source identity or distinctive copy."
+  ].join(" ");
 }
+
+const DENSITY_PHRASES: Record<string, string> = {
+  "dense but organized": "Organize dense information with clear grouping and scan paths.",
+  spacious: "Favor spacious sections and image-led hierarchy.",
+  moderate: "Keep moderate density with disciplined section rhythm."
+};
+
+const WHITESPACE_PHRASES: Record<string, string> = {
+  "compact with clear grouping": "compact whitespace with clear grouping",
+  generous: "generous whitespace for calm reading",
+  balanced: "balanced whitespace around primary content"
+};
 
 function inferDensity(text: string): string {
   const lower = text.toLowerCase();

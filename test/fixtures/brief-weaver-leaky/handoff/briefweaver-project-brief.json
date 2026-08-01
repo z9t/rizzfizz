@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "briefweaver.project-brief.v1",
+  "run_id": "brief-weaver-leaky",
+  "source_safe": true,
+  "operator_prompt": "Build with LEAKY_BW_BRAND_7c2e voice.",
+  "selected_reference_set": [
+    {
+      "reference_id": "leaky-ref",
+      "tags": [
+        "gallery"
+      ],
+      "notes": "Synthetic leaky fixture.",
+      "selection_rationale": "Privacy boundary test."
+    }
+  ],
+  "controls": {
+    "variant_count": 1
+  },
+  "desired_variation_dimensions": [
+    "palette"
+  ],
+  "scrub_policy": {
+    "private_exclusions": [
+      "raw/",
+      "source-manifest.json"
+    ]
+  },
+  "rizzfizz_import": {
+    "status": "ready",
+    "input_schema": "briefweaver.project-brief.v1",
+    "import_hint": "Import only source-safe file set.",
+    "attachments": [
+      "variation-manifest.json",
+      "project-brief.json",
+      "handoff/briefweaver-project-brief.json",
+      "scrubbed/DESIGN-neutral.md",
+      "scrubbed/scrubbed-design-dna.json",
+      "variants/variants.json",
+      "palettes/palette-run.json",
+      "variants/DESIGN-variant-*.md"
+    ],
+    "private_exclusions": [
+      "raw/",
+      "source-manifest.json"
+    ]
+  },
+  "variant_ids": [
+    "variant-1"
+  ],
+  "default_variant": "variant-1"
+}

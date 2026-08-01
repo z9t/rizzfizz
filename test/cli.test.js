@@ -157,6 +157,84 @@ test("design-md embeds scrubbed overview and tech-context summary without absolu
   }
 });
 
+test("design-md rejects weak tech-context bypass and redacts URL/path fields", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "rizzfizz-test-"));
+  try {
+    await execFileAsync("node", [
+      cli,
+      "scrub-md",
+      "--input",
+      fixture,
+      "--variants",
+      "1",
+      "--out",
+      dir
+    ]);
+
+    const weakBypassPath = join(dir, "weak-bypass-tech.json");
+    await writeFile(weakBypassPath, JSON.stringify({
+      source_safe: true,
+      recommendations: {
+        stack_fit: "see https://evil.example/leak for stack",
+        detected_stack_summary: "Clone from file:///Users/max/secret/stack.md",
+        do_not_clone: ["/Users/max/Documents/Code/secret-app/_next"]
+      }
+    }, null, 2));
+    await assert.rejects(
+      () => execFileAsync("node", [
+        cli,
+        "design-md",
+        "--input",
+        dir,
+        "--out",
+        join(dir, "design-md-reject"),
+        "--tech-context",
+        weakBypassPath
+      ]),
+      (error) => {
+        const message = String(error?.stderr || error?.message || error);
+        assert.match(message, /expected schema "rizzfizz\.technology-context\.v2"/);
+        return true;
+      }
+    );
+
+    const hostileV2Path = join(dir, "hostile-v2-tech.json");
+    await writeFile(hostileV2Path, JSON.stringify({
+      schema: "rizzfizz.technology-context.v2",
+      source_safe: true,
+      recommendations: {
+        stack_fit: "Prefer Next.js; details at https://evil.example/leak",
+        detected_stack_summary: "Inspect file:///Users/max/secret/stack.md before choosing",
+        builder_use: [],
+        cautions: [],
+        do_not_clone: ["Do not copy /Users/max/Documents/Code/secret-app/_next paths"]
+      },
+      detected: [{ name: "https://evil.example/framework" }]
+    }, null, 2));
+    const out = join(dir, "design-md-hostile");
+    await execFileAsync("node", [
+      cli,
+      "design-md",
+      "--input",
+      dir,
+      "--out",
+      out,
+      "--tech-context",
+      hostileV2Path
+    ]);
+    const md = await readFile(join(out, "DESIGN.md"), "utf8");
+    assert.match(md, /## Technology Context/i);
+    assert.equal(md.includes("https://evil.example"), false);
+    assert.equal(md.includes("evil.example"), false);
+    assert.equal(md.includes("file:///Users/max/secret/stack.md"), false);
+    assert.equal(md.includes("/Users/max/Documents/Code/secret-app"), false);
+    assert.equal(md.includes("/Users/max/secret"), false);
+    assert.match(md, /\[source URL removed\]|\[source path removed\]/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("inspect command prints a compact run summary", async () => {
   const dir = await mkdtemp(join(tmpdir(), "rizzfizz-test-"));
   try {
@@ -332,6 +410,38 @@ test("export commands write a-eyes tokens, CSS vars, and agent briefs", async ()
     assert.match(brief, /Quality Bar/);
     assert.match(brief, /Implementation Contract/);
     assert.match(brief, /Component Contract/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("tech-scan rejects non-http(s) URLs without spawning Whiffler", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "rizzfizz-tech-url-"));
+  try {
+    const out = join(dir, "tech.json");
+    await assert.rejects(
+      () => execFileAsync("node", [cli, "tech-scan", "--url", "file:///etc/passwd", "--out", out]),
+      /http\(s\)/i
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("tech-scan --url uses RIFF_WHIF_BIN fake Whiffler for https URLs", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "rizzfizz-fake-whif-"));
+  try {
+    const fakeWhiffler = join(dir, "fake-whiffler.js");
+    const fixtureJson = await readFile(waffleFixture, "utf8");
+    await writeFile(fakeWhiffler, `#!/usr/bin/env node\nprocess.stdout.write(${JSON.stringify(fixtureJson)});\n`);
+    const out = join(dir, "tech.json");
+    await execFileAsync("node", [cli, "tech-scan", "--url", "https://example.com", "--out", out], {
+      env: { ...process.env, RIFF_WHIF_BIN: fakeWhiffler }
+    });
+    const techContext = JSON.parse(await readFile(out, "utf8"));
+    assert.equal(techContext.schema, "rizzfizz.technology-context.v2");
+    assert.equal(techContext.source_safe, true);
+    assert.equal(techContext.detected[0].name, "Next.js");
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -617,14 +727,15 @@ function bridgeTokensTwo() {
 }
 
 test("handoff writes a Pidge payload in dry-run mode", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "rizzfizz-test-"));
+  const dir = await mkdtemp(join(tmpdir(), "rizzfizz-leakpath-user-"));
   try {
-    await execFileAsync("node", [cli, "scrub-md", "--input", fixture, "--variants", "2", "--out", join(dir, "run")]);
+    const runDir = join(dir, "run");
+    await execFileAsync("node", [cli, "scrub-md", "--input", fixture, "--variants", "2", "--out", runDir]);
     const { stdout } = await execFileAsync("node", [
       cli,
       "handoff",
       "--input",
-      join(dir, "run"),
+      runDir,
       "--to",
       "gemma",
       "--variant",
@@ -639,15 +750,61 @@ test("handoff writes a Pidge payload in dry-run mode", async () => {
 
     const payloadPath = stdout.match(/Wrote pidge payload: (.+)/)?.[1].trim();
     assert.ok(payloadPath);
-    const payload = JSON.parse(await readFile(payloadPath, "utf8"));
+    const payloadRaw = await readFile(payloadPath, "utf8");
+    const payload = JSON.parse(payloadRaw);
     assert.equal(payload.schema, "rizzfizz.pidge-handoff.v1");
     assert.equal(payload.variants.length, 1);
     assert.equal(payload.variants[0].id, "variant-1");
-    assert.match(payload.source.build_contract, /build-contract\.json$/);
-    assert.match(payload.source.visual_tokens, /visual-tokens\.json$/);
-    assert.match(payload.source.run_manifest, /run-manifest\.json$/);
-    assert.match(payload.source.variants_json, /variants\.json$/);
+    assert.equal(payload.source.build_contract, "build-contract.json");
+    assert.equal(payload.source.visual_tokens, "visual-tokens.json");
+    assert.equal(payload.source.run_manifest, "run-manifest.json");
+    assert.equal(payload.source.variants_json, "variants.json");
+    assert.equal(payload.source.palette_run, "palette-run.json");
     assert.equal(payload.source.raw_reference_included, false);
+    assert.equal(payload.run_id, "run");
+    assert.equal(Object.hasOwn(payload, "run_dir"), false);
+    assert.equal(payloadRaw.includes(runDir), false);
+    assert.equal(payloadRaw.includes("/Users/"), false);
+    assert.equal(payload.variants[0].builder_brief, "builder-briefs/variant-1.md");
+    assert.equal(payload.variants[0].design_md, "DESIGN-variant-1.md");
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("handoff --include-raw attaches raw-reference; default excludes it", async () => {
+  const { sendPidgeHandoff } = await import("../dist/pidge.js");
+  const dir = await mkdtemp(join(tmpdir(), "rizzfizz-include-raw-"));
+  try {
+    const runDir = join(dir, "run");
+    await execFileAsync("node", [cli, "scrub-md", "--input", fixture, "--variants", "1", "--out", runDir]);
+
+    const excluded = await sendPidgeHandoff({
+      input: runDir,
+      from: "codex",
+      to: "gemma",
+      kind: "rizzfizz-handoff",
+      variant: "variant-1",
+      dryRun: true,
+      pidge: "/Users/max/Documents/Code/pidge/pidge"
+    });
+    assert.equal(excluded.attachments.some((path) => path.endsWith("raw-reference.json")), false);
+    const excludedPayload = JSON.parse(await readFile(excluded.payloadPath, "utf8"));
+    assert.equal(excludedPayload.source.raw_reference_included, false);
+
+    const included = await sendPidgeHandoff({
+      input: runDir,
+      from: "codex",
+      to: "gemma",
+      kind: "rizzfizz-handoff",
+      variant: "variant-1",
+      dryRun: true,
+      includeRaw: true,
+      pidge: "/Users/max/Documents/Code/pidge/pidge"
+    });
+    assert.equal(included.attachments.some((path) => path.endsWith("raw-reference.json")), true);
+    const includedPayload = JSON.parse(await readFile(included.payloadPath, "utf8"));
+    assert.equal(includedPayload.source.raw_reference_included, true);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

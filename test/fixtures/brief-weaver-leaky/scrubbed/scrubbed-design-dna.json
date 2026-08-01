@@ -1,0 +1,15 @@
+{
+  "domain": "photography portfolio",
+  "design_direction": "Premium photography portfolio for LEAKY_BW_BRAND_7c2e.",
+  "builder_summary": "LEAKY_BW_BRAND_7c2e calm cinematic gallery direction.",
+  "scrubbing_policy": {
+    "builder_files_exclude": [
+      "source URLs",
+      "source names"
+    ],
+    "preserve": [
+      "layout relationship",
+      "color role relationship"
+    ]
+  }
+}
