@@ -1,6 +1,8 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { deepPullSite } from "./deep-pull.js";
 import { writeJson } from "./io.js";
+import { extractPageCopy, type PageCopy } from "./page-copy.js";
 
 export type PullOptions = {
   out: string;
@@ -8,10 +10,12 @@ export type PullOptions = {
   copy?: string;
   img?: string;
   imgCount?: number;
-  /** Escalate to heavier tools (playwright path reserved). Default false = fetch-only. */
+  /** Fetch-only (no escalation). */
   fastCopy?: boolean;
   fastImg?: boolean;
+  /** Deep copy crawl: fetch → light paths → wigolo → playwright → scrapy/scrapely. */
   allCopy?: boolean;
+  /** Deep image crawl with same escalation ladder. */
   allImg?: boolean;
 };
 
@@ -19,23 +23,30 @@ export type PullResult = {
   schema: "rizzfizz.pull.v1";
   created_at: string;
   insp?: { url: string; status: number; title?: string; note: string };
-  copy?: { url: string; status: number; text_path: string; chars: number; escalation: string[] };
+  copy?: {
+    url: string;
+    status: number;
+    text_path: string;
+    json_path: string;
+    chars: number;
+    escalation: string[];
+    structured?: PageCopy;
+  };
   images?: {
     url: string;
     status: number;
     count: number;
     paths: string[];
     escalation: string[];
-    estimated_seconds?: number;
     queue?: "sync" | "async";
   };
   notes: string[];
 };
 
 /**
- * Pull inspire / copy / images with escalating fetch strategy.
- * Default: polite single-page fetch. --allcopy/--allimg estimate duration and
- * mark async queue; Playwright/scrapley escalation is documented, not forced.
+ * Pull inspire / copy / images.
+ * Default: polite single-page fetch.
+ * --allcopy/--allimg: real deep pull (wigolo, a-eyes playwright, scrapy/scrapely).
  */
 export async function pullAssets(options: PullOptions): Promise<PullResult> {
   const outDir = resolve(options.out);
@@ -52,33 +63,53 @@ export async function pullAssets(options: PullOptions): Promise<PullResult> {
     notes.push(`insp: ${options.insp} → status ${result.insp.status}`);
   }
 
-  if (options.copy) {
-    const escalation = escalatePlan({
-      all: Boolean(options.allCopy),
-      fast: Boolean(options.fastCopy),
-      kind: "copy"
+  const deep = Boolean(options.allCopy || options.allImg);
+  const deepUrl = options.copy || options.img || options.insp;
+
+  if (deep && deepUrl && !options.fastCopy && !options.fastImg) {
+    const deepResult = await deepPullSite({
+      url: deepUrl,
+      outDir,
+      wantCopy: Boolean(options.copy || options.allCopy),
+      wantImages: Boolean(options.img || options.allImg),
+      imgCount: options.imgCount || 3
     });
-    if (options.allCopy) {
-      notes.push(`allcopy: estimated ${estimateSeconds(options.copy, "copy")}s — queue=async (not started; use a worker)`);
+    notes.push(...deepResult.notes);
+    notes.push(`deep-pull escalation: ${deepResult.escalation_used.join(" → ")}`);
+    if (options.copy || options.allCopy) {
+      result.copy = {
+        url: deepUrl,
+        status: deepResult.pages[0]?.status || 200,
+        text_path: join(outDir, "pulled-copy.txt"),
+        json_path: join(outDir, "pulled-copy.json"),
+        chars: deepResult.copy.body?.length || 0,
+        escalation: deepResult.escalation_used,
+        structured: deepResult.copy
+      };
     }
-    result.copy = await pullCopy(options.copy, outDir, escalation);
+    if (options.img || options.allImg) {
+      result.images = {
+        url: deepUrl,
+        status: deepResult.pages[0]?.status || 200,
+        count: deepResult.images.length,
+        paths: deepResult.images,
+        escalation: deepResult.escalation_used,
+        queue: "sync"
+      };
+    }
+  } else {
+    if (options.copy) {
+      const escalation = escalatePlan({ all: false, fast: Boolean(options.fastCopy) });
+      result.copy = await pullCopy(options.copy, outDir, escalation);
+    }
+    if (options.img) {
+      const count = Math.max(1, Math.min(24, options.imgCount || 3));
+      const escalation = escalatePlan({ all: false, fast: Boolean(options.fastImg) });
+      result.images = await pullImages(options.img, outDir, count, escalation);
+    }
   }
 
-  if (options.img) {
-    const count = Math.max(1, Math.min(24, options.imgCount || 3));
-    const escalation = escalatePlan({
-      all: Boolean(options.allImg),
-      fast: Boolean(options.fastImg),
-      kind: "img"
-    });
-    const estimated = options.allImg ? estimateSeconds(options.img, "img") : undefined;
-    if (options.allImg) {
-      notes.push(`allimg: estimated ${estimated}s — queue=async; enumerates contact/services lightly`);
-    }
-    result.images = await pullImages(options.img, outDir, count, escalation, estimated);
-  }
-
-  if (!options.insp && !options.copy && !options.img) {
+  if (!options.insp && !options.copy && !options.img && !options.allCopy && !options.allImg) {
     throw new Error("pull requires --insp and/or --copy and/or --img");
   }
 
@@ -86,24 +117,20 @@ export async function pullAssets(options: PullOptions): Promise<PullResult> {
   return result;
 }
 
-function escalatePlan(options: { all: boolean; fast: boolean; kind: string }): string[] {
+function escalatePlan(options: { all: boolean; fast: boolean }): string[] {
   if (options.fast) return ["fetch"];
-  if (options.all) return ["fetch", "wigolo", "playwright(if-needed)"];
-  return ["fetch", "playwright(if-fetch-thin)"];
+  if (options.all) return ["fetch", "wigolo", "playwright(a-eyes)", "scrapely|scrapy"];
+  return ["fetch"];
 }
 
-function estimateSeconds(url: string, kind: "copy" | "img"): number {
-  // Honest coarse estimate for queue messaging — not a promise.
-  const base = kind === "img" ? 45 : 20;
-  return base + Math.min(90, url.length % 17);
-}
+const FETCH_MS = Number(process.env.RIZZFIZZ_PULL_TIMEOUT_MS || 8000);
 
 async function pullInsp(url: string): Promise<NonNullable<PullResult["insp"]>> {
   try {
     const res = await fetch(url, {
       redirect: "follow",
-      headers: { "user-agent": "RizzFizzPull/0.1 (+local; polite single GET)" },
-      signal: AbortSignal.timeout(20000)
+      headers: { "user-agent": "RizzFizzPull/0.2 (+local; polite single GET)" },
+      signal: AbortSignal.timeout(FETCH_MS)
     });
     const html = await res.text();
     const title = html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim();
@@ -111,7 +138,7 @@ async function pullInsp(url: string): Promise<NonNullable<PullResult["insp"]>> {
       url,
       status: res.status,
       title,
-      note: "Static GET only — use design-extract/Playwright for computed styles."
+      note: "Static GET — deep styles via --allcopy / a-eyes playwright."
     };
   } catch (error) {
     return {
@@ -125,19 +152,32 @@ async function pullInsp(url: string): Promise<NonNullable<PullResult["insp"]>> {
 async function pullCopy(url: string, outDir: string, escalation: string[]): Promise<NonNullable<PullResult["copy"]>> {
   const res = await fetch(url, {
     redirect: "follow",
-    headers: { "user-agent": "RizzFizzPull/0.1 (+local; polite single GET)" },
-    signal: AbortSignal.timeout(20000)
+    headers: { "user-agent": "RizzFizzPull/0.2 (+local; polite single GET)" },
+    signal: AbortSignal.timeout(FETCH_MS)
   });
   const html = await res.text();
-  const text = htmlToText(html).slice(0, 200_000);
+  const structured = extractPageCopy(html, url);
+  const text = [
+    structured.title,
+    structured.site_name,
+    structured.sub,
+    structured.h2,
+    structured.body,
+    structured.footer,
+    ...structured.paragraphs
+  ].filter(Boolean).join("\n\n").slice(0, 200_000) || htmlToText(html).slice(0, 200_000);
   const textPath = join(outDir, "pulled-copy.txt");
+  const jsonPath = join(outDir, "pulled-copy.json");
   await writeFile(textPath, text, "utf8");
+  await writeJson(jsonPath, structured);
   return {
     url,
     status: res.status,
     text_path: textPath,
+    json_path: jsonPath,
     chars: text.length,
-    escalation
+    escalation,
+    structured
   };
 }
 
@@ -145,13 +185,12 @@ async function pullImages(
   url: string,
   outDir: string,
   count: number,
-  escalation: string[],
-  estimated?: number
+  escalation: string[]
 ): Promise<NonNullable<PullResult["images"]>> {
   const res = await fetch(url, {
     redirect: "follow",
-    headers: { "user-agent": "RizzFizzPull/0.1 (+local; polite single GET)" },
-    signal: AbortSignal.timeout(20000)
+    headers: { "user-agent": "RizzFizzPull/0.2 (+local; polite single GET)" },
+    signal: AbortSignal.timeout(FETCH_MS)
   });
   const html = await res.text();
   const srcs = [...html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)]
@@ -162,17 +201,17 @@ async function pullImages(
   for (let i = 0; i < unique.length; i++) {
     try {
       const imgRes = await fetch(unique[i], {
-        headers: { "user-agent": "RizzFizzPull/0.1 (+local; polite image GET)" },
-        signal: AbortSignal.timeout(15000)
+        headers: { "user-agent": "RizzFizzPull/0.2 (+local; polite image GET)" },
+        signal: AbortSignal.timeout(Math.min(FETCH_MS, 8000))
       });
       if (!imgRes.ok) continue;
-      const buf = Buffer.from(await imgRes.arrayBuffer());
+      const buf = new Uint8Array(await imgRes.arrayBuffer());
       const ext = guessExt(unique[i], imgRes.headers.get("content-type"));
       const path = join(outDir, `pulled-img-${i + 1}${ext}`);
       await writeFile(path, buf);
       paths.push(path);
     } catch {
-      /* skip failed image */
+      /* skip */
     }
   }
   return {
@@ -181,8 +220,7 @@ async function pullImages(
     count: paths.length,
     paths,
     escalation,
-    estimated_seconds: estimated,
-    queue: estimated ? "async" : "sync"
+    queue: "sync"
   };
 }
 

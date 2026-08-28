@@ -2,8 +2,8 @@ import { execFile } from "node:child_process";
 import { access, mkdir } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
 import { promisify } from "node:util";
-import { readJson, writeJson } from "./io.js";
-import { paletteRunSchema } from "./schemas.js";
+import { writeJson } from "./io.js";
+import { loadPaletteRunFlexible, writeTokensHandoff } from "./tokens-handoff.js";
 import type { PaletteRun } from "./types.js";
 
 const execFileAsync = promisify(execFile);
@@ -23,6 +23,8 @@ export type PidgeHandoffOptions = {
   dryRun?: boolean;
   includeRaw?: boolean;
   risk?: string;
+  /** Attach only tokens-handoff.json + tokens.css (no HTML / briefs). */
+  tokensOnly?: boolean;
 };
 
 export type PidgeHandoffResult = {
@@ -34,17 +36,40 @@ export type PidgeHandoffResult = {
 };
 
 export async function sendPidgeHandoff(options: PidgeHandoffOptions): Promise<PidgeHandoffResult> {
-  const inputDir = resolve(options.input);
+  const inputPath = resolve(options.input);
   const pidge = options.pidge || DEFAULT_PIDGE;
   validateAgentName(options.from, "--from");
   validateAgentName(options.to, "--to");
 
-  const run = paletteRunSchema.parse(await readJson(join(inputDir, "palette-run.json"))) as PaletteRun;
+  const { run, runDir } = await loadPaletteRunFlexible(inputPath);
+  // Ensure palette-run.json exists in runDir for schema consumers when input was a riff file
+  if (!(await exists(join(runDir, "palette-run.json")))) {
+    await writeJson(join(runDir, "palette-run.json"), run);
+  }
   const selectedVariants = selectVariants(run, options.variant || "all");
-  const payloadPath = await writeHandoffPayload(inputDir, run, selectedVariants, options);
-  const attachments = await collectAttachments(inputDir, selectedVariants.map((item) => item.id), Boolean(options.includeRaw));
-  const summary = options.summary || defaultSummary(selectedVariants.map((item) => item.id));
-  const contextHint = options.contextHint || defaultContextHint(Boolean(options.includeRaw));
+
+  let attachments: string[];
+  let payloadPath: string;
+  if (options.tokensOnly) {
+    const tokensPath = join(runDir, "tokens-handoff.json");
+    await writeTokensHandoff(runDir, tokensPath);
+    payloadPath = await writeTokensOnlyPayload(runDir, run, selectedVariants, options);
+    attachments = [tokensPath];
+    const cssPath = join(runDir, "tokens.css");
+    if (await exists(cssPath)) attachments.push(cssPath);
+  } else {
+    payloadPath = await writeHandoffPayload(runDir, run, selectedVariants, options);
+    attachments = await collectAttachments(runDir, selectedVariants.map((item) => item.id), Boolean(options.includeRaw));
+  }
+
+  const summary = options.summary
+    || (options.tokensOnly
+      ? `RizzFizz tokens-only handoff (${selectedVariants.length} variant${selectedVariants.length === 1 ? "" : "s"})`
+      : defaultSummary(selectedVariants.map((item) => item.id)));
+  const contextHint = options.contextHint
+    || (options.tokensOnly
+      ? "Tokens-only: use attached tokens-handoff.json (+ tokens.css). No HTML preview attached."
+      : defaultContextHint(Boolean(options.includeRaw)));
   const command = [
     pidge,
     "send",
@@ -86,6 +111,49 @@ export async function sendPidgeHandoff(options: PidgeHandoffOptions): Promise<Pi
     stdout: stdout.trim(),
     dryRun: false
   };
+}
+
+async function writeTokensOnlyPayload(
+  inputDir: string,
+  run: PaletteRun,
+  selectedVariants: PaletteRun["variants"],
+  options: PidgeHandoffOptions
+): Promise<string> {
+  const handoffDir = join(inputDir, "pidge");
+  await mkdir(handoffDir, { recursive: true });
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..+$/, "Z");
+  const payloadPath = join(handoffDir, `payload-tokens-${stamp}-${options.to}.json`);
+  await writeJson(payloadPath, {
+    schema: "rizzfizz.pidge-handoff.v1",
+    task: "Use attached token JSON only — no HTML. Apply palette tokens and umbrella design-system classification.",
+    run_id: basename(inputDir),
+    tokens_only: true,
+    source: {
+      tool: "rizzfizz",
+      tokens_handoff: "tokens-handoff.json",
+      tokens_css: "tokens.css",
+      palette_run: "palette-run.json",
+      raw_reference_included: false
+    },
+    routing: {
+      from: options.from,
+      to: options.to,
+      kind: options.kind,
+      expects_response: Boolean(options.expectsResponse)
+    },
+    variants: selectedVariants.map((variant) => ({
+      id: variant.id,
+      name: variant.name,
+      tokens: variant.tokens
+    })),
+    acceptance: [
+      "Consume tokens-handoff.json as the primary artifact.",
+      "Do not expect preview.html or studio.html in this handoff.",
+      "Acknowledge receipt with pidge ack when consumed."
+    ],
+    relationship: run.relationship
+  });
+  return payloadPath;
 }
 
 async function writeHandoffPayload(

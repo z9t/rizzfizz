@@ -566,6 +566,32 @@ export function classifyDesignSystem(input: {
   };
 }
 
+/**
+ * Rank all five umbrella design systems with softmax probabilities (sum ≈ 1).
+ * Brand/product systems are never returned here — only the umbrellas in PROFILES.
+ */
+export function rankDesignSystems(input: {
+  text?: string;
+  paletteRun?: PaletteRun;
+  relationship?: string;
+}): DesignSystemStyleMatch[] {
+  const text = input.text || "";
+  const relationship = input.relationship || input.paletteRun?.relationship || "";
+  const scored = PROFILES.map((profile) => scoreProfile(profile, text, relationship));
+  const maxScore = Math.max(...scored.map((s) => s.score), 0.01);
+  const exps = scored.map((s) => Math.exp((s.score / Math.max(maxScore, 0.5)) * 2.2));
+  const sum = exps.reduce((a, b) => a + b, 0) || 1;
+  return scored
+    .map((s, i) => {
+      const probability = Number((exps[i] / sum).toFixed(4));
+      return toMatch(s, {
+        confidence: probability,
+        confidence_label: probability >= 0.45 ? "high" : probability >= 0.22 ? "medium" : "low"
+      });
+    })
+    .sort((a, b) => b.confidence - a.confidence);
+}
+
 export function designSystemGuidance(classification: {
   primary: { builder_guidance: string[] };
   secondary: { builder_guidance: string[] } | null;

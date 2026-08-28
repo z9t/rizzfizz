@@ -42,8 +42,36 @@ rizzfizz tech-scan --url https://example.com --out ./technology-context.json
 rizzfizz tech-scan --input ./whiffler-scan.json --out ./technology-context.json
 rizzfizz inspect --input ./runs/example
 rizzfizz preview --input ./runs/example --out ./runs/example/preview.html
+rizzfizz studio --input ./runs/example --out ./runs/example/studio.html --site-name "North Pier" --insp example.com
 rizzfizz handoff --input ./runs/example --to gemma --variant variant-1 --expects-response
 ```
+
+## Studio preview & tokens-only (CLI)
+
+HTML is **optional** and never auto-opened. Pull/insp flags do not imply HTML.
+
+```sh
+# Tokens / JSON only (no HTML) + optional Pidge handoff
+rizzfizz scrub-md --input ./DESIGN.md --out ./runs/demo --tokens-only \
+  --handoff --to gemma --dry-run
+
+rizzfizz export --format tokens-handoff --input ./runs/demo --out ./tokens-handoff.json
+rizzfizz handoff --input ./runs/demo --to gemma --tokens-only --dry-run
+
+# Interactive studio (explicit --studio only)
+rizzfizz scrub-md --input ./DESIGN.md --out ./runs/demo \
+  --insp https://example.com --copy https://example.com --img https://example.com --count 3 \
+  --studio --site-name "Quiet Studio" \
+  --body "Optional manual body for prompts." \
+  --footer "Optional manual footer for prompts."
+```
+
+Studio menubar: site · **5 umbrella DS chip** (Swiss / Bento / Neo-Minimalism / Neo-Brutalism / Maximalism + %) · palette count · fonts · swatches · VAR chips · fav/client/collections/reriff · **pencil (✎)** far right.
+
+- Preview: no per-field Edit buttons. Pencil → CMS edit mode (same page, no tabs): all copy editable; presets multi-select / delete / backup JSON; fonts + Google Fonts load; paste palette JSON; save studio state / prompt-copy / accuracy log.
+- DS chip click: pick another umbrella → display 100%, previous via hover; logged for accuracy review (`design-system-override`).
+
+Honest gaps: font optical-balance corpus/screenshots (`INSP-VALUE`); `--allcopy` / `--allimg` estimate/queue only.
 
 ## Riff / reriff
 
